@@ -1,12 +1,26 @@
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
-import { uploadResume, deleteResume } from "@/app/actions/resume";
+import { uploadResume, deleteResume, reextractResume } from "@/app/actions/resume";
 
 const errors: Record<string, string> = {
   missing: "Please choose a PDF file.",
   size: "The file is too large. The limit is 5 MB.",
   type: "That doesn't look like a PDF. Please upload a PDF file.",
 };
+
+function extractionStatus(text: string | null) {
+  if (text === null) {
+    return { ok: false, label: "Text hasn't been extracted yet." };
+  }
+  if (text.length < 100) {
+    return {
+      ok: false,
+      label:
+        "No readable text found. This may be a scanned PDF. Please upload a text-based PDF (for example, exported from Word or Google Docs).",
+    };
+  }
+  return { ok: true, label: `${text.length.toLocaleString()} characters extracted.` };
+}
 
 export default async function ResumePage({
   searchParams,
@@ -43,31 +57,55 @@ export default async function ResumePage({
           <p className="text-sm text-gray-500">Nothing uploaded yet.</p>
         )}
         <ul className="space-y-3">
-          {resumes.map((r) => (
-            <li key={r.id} className="flex items-center justify-between rounded border p-3">
-              <div>
-                <p className="font-medium">{r.fileName}</p>
-                <p className="text-sm text-gray-500">
-                  {(r.sizeBytes / 1024).toFixed(0)} KB ·{" "}
-                  {r.uploadedAt.toLocaleDateString("en-GB")}
-                </p>
-              </div>
-              <div className="flex items-center gap-4 text-sm">
-                <a
-                  href={`/api/resume/${r.id}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline"
-                >
-                  View
-                </a>
-                <form action={deleteResume}>
-                  <input type="hidden" name="id" value={r.id} />
-                  <button className="text-red-600 underline">Delete</button>
-                </form>
-              </div>
-            </li>
-          ))}
+          {resumes.map((r) => {
+            const status = extractionStatus(r.extractedText);
+            return (
+              <li key={r.id} className="space-y-3 rounded border p-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{r.fileName}</p>
+                    <p className="text-sm text-gray-500">
+                      {(r.sizeBytes / 1024).toFixed(0)} KB ·{" "}
+                      {r.uploadedAt.toLocaleDateString("en-GB")}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm">
+                    <a
+                      href={`/api/resume/${r.id}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline"
+                    >
+                      View
+                    </a>
+                    <form action={deleteResume}>
+                      <input type="hidden" name="id" value={r.id} />
+                      <button className="text-red-600 underline">Delete</button>
+                    </form>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <p className={status.ok ? "text-green-700" : "text-amber-700"}>
+                    {status.label}
+                  </p>
+                  <form action={reextractResume}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button className="whitespace-nowrap underline">Re-run extraction</button>
+                  </form>
+                </div>
+
+                {r.extractedText && r.extractedText.length > 0 && (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer">Preview extracted text</summary>
+                    <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
+                      {r.extractedText.slice(0, 1500)}
+                    </pre>
+                  </details>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </section>
     </div>

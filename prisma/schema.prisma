@@ -32,6 +32,7 @@ model CandidateProfile {
   careerHistory CareerHistory[]
   careerBreaks  CareerBreak[]
   skills        CandidateSkill[]
+  resumes       Resume[]
 }
 
 model EmployerProfile {
@@ -92,5 +93,18 @@ model CandidateSkill {
   createdAt       DateTime         @default(now())
 
   @@unique([candidateId, skillId])
+  @@index([candidateId])
+}
+
+model Resume {
+  id            String           @id @default(cuid())
+  candidateId   String
+  candidate     CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fileName      String
+  storagePath   String
+  sizeBytes     Int
+  extractedText String?
+  uploadedAt    DateTime         @default(now())
+
   @@index([candidateId])
 }

@@ -1,11 +1,13 @@
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
-import { uploadResume, deleteResume, reextractResume } from "@/app/actions/resume";
+import { uploadResume, deleteResume, reextractResume, analyzeResume } from "@/app/actions/resume";
 
 const errors: Record<string, string> = {
   missing: "Please choose a PDF file.",
   size: "The file is too large. The limit is 5 MB.",
   type: "That doesn't look like a PDF. Please upload a PDF file.",
+  notext: "No readable text was found in this resume, so it can't be analyzed.",
+  ai: "The AI analysis failed. Please try again in a moment.",
 };
 
 function extractionStatus(text: string | null) {
@@ -94,6 +96,29 @@ export default async function ResumePage({
                     <button className="whitespace-nowrap underline">Re-run extraction</button>
                   </form>
                 </div>
+
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <p className="text-gray-500">
+                    {r.extractedAt
+                      ? `AI analysis done on ${r.extractedAt.toLocaleString("en-GB")}`
+                      : "Not analyzed yet."}
+                  </p>
+                  <form action={analyzeResume}>
+                    <input type="hidden" name="id" value={r.id} />
+                    <button className="whitespace-nowrap rounded bg-black px-3 py-1 text-white">
+                      Analyze with AI
+                    </button>
+                  </form>
+                </div>
+
+                {r.extractionJson != null && (
+                  <details className="text-sm">
+                    <summary className="cursor-pointer">View AI result (raw)</summary>
+                    <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
+                      {JSON.stringify(r.extractionJson, null, 2)}
+                    </pre>
+                  </details>
+                )}
 
                 {r.extractedText && r.extractedText.length > 0 && (
                   <details className="text-sm">

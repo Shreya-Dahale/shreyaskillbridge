@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
 import { saveFile, readFile, deleteFile } from "@/lib/storage";
 import { pdfToText } from "@/lib/pdf";
+import { extractResumeData } from "@/lib/ai/gemini";
 
 const PATH = "/candidate/resume";
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -73,5 +74,36 @@ export async function deleteResume(formData: FormData) {
 
   await prisma.resume.delete({ where: { id: resume.id } });
   await deleteFile(resume.storagePath);
+  revalidatePath(PATH);
+}
+
+export async function analyzeResume(formData: FormData) {
+  const profile = await requireCandidate();
+  const id = String(formData.get("id") ?? "");
+
+  const resume = await prisma.resume.findFirst({
+    where: { id, candidateId: profile.id },
+  });
+  if (!resume) return;
+
+  if (!resume.extractedText || resume.extractedText.length < 100) {
+    redirect(`${PATH}?error=notext`);
+  }
+
+  let result;
+  try {
+    result = await extractResumeData(resume.extractedText);
+  } catch (e) {
+    console.error("AI extraction failed", e);
+    redirect(`${PATH}?error=ai`);
+  }
+
+  await prisma.resume.update({
+    where: { id: resume.id },
+    data: {
+      extractionJson: JSON.parse(JSON.stringify(result)),
+      extractedAt: new Date(),
+    },
+  });
   revalidatePath(PATH);
 }

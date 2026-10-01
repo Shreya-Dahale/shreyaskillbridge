@@ -104,6 +104,8 @@ model Resume {
   storagePath   String
   sizeBytes     Int
   extractedText String?
+  extractionJson Json?
+  extractedAt   DateTime?
   uploadedAt    DateTime         @default(now())
 
   @@index([candidateId])

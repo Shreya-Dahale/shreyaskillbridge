@@ -22,8 +22,8 @@ export default async function RegisterPage({
         <input name="email" type="email" placeholder="Email" required className="w-full rounded border p-2" />
         <input name="password" type="password" placeholder="Password (8+ chars)" required className="w-full rounded border p-2" />
         <select name="role" className="w-full rounded border p-2" defaultValue="CANDIDATE">
-          <option value="CANDIDATE">I'm a candidate returning to work</option>
-          <option value="EMPLOYER">I'm an employer</option>
+          <option value="CANDIDATE">I&apos;m a candidate returning to work</option>
+          <option value="EMPLOYER">I&apos;m an employer</option>
         </select>
         <input name="companyName" placeholder="Company name (employers only)" className="w-full rounded border p-2" />
         <button className="w-full rounded bg-black p-2 text-white">Sign up</button>

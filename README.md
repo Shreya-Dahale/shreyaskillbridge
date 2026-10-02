@@ -32,4 +32,5 @@ Demo logins (local only, password `password123`):
 
 - Phase 0: foundation, auth with roles, dashboards (done)
 - Phase 1: candidate profile, resume upload, AI extraction, review (done)
-- Phase 2: employer jobs and requirement extraction (next)
+- Phase 2: employer company profile, jobs, AI requirement extraction, review and publish (done)
+- Phase 3: skill-gap engine (next)

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
+import { extractJobData } from "@/lib/ai/gemini";
 
 const jobSchema = z.object({
   title: z.string().trim().min(1).max(100),
@@ -39,4 +40,33 @@ export async function deleteJob(formData: FormData) {
 
   revalidatePath("/employer/jobs");
   redirect("/employer/jobs");
+}
+
+export async function analyzeJob(formData: FormData) {
+  const profile = await requireEmployer();
+  const id = String(formData.get("id") ?? "");
+
+  const job = await prisma.job.findFirst({
+    where: { id, employerId: profile.id },
+  });
+  if (!job) return;
+
+  const back = `/employer/jobs/${job.id}`;
+
+  let result;
+  try {
+    result = await extractJobData(job.title, job.description);
+  } catch (e) {
+    console.error("Job analysis failed", e);
+    redirect(`${back}?error=ai`);
+  }
+
+  await prisma.job.update({
+    where: { id: job.id },
+    data: {
+      extractionJson: JSON.parse(JSON.stringify(result)),
+      extractedAt: new Date(),
+    },
+  });
+  revalidatePath(back);
 }

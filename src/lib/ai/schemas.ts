@@ -36,3 +36,20 @@ export const resumeExtractionSchema = z.object({
 });
 
 export type ResumeExtraction = z.infer<typeof resumeExtractionSchema>;
+
+export const extractedRequirementSchema = z.object({
+  name: z.string().describe("Skill, tool or technology, e.g. 'Java', 'Spring Boot', 'Docker'"),
+  importance: z
+    .enum(["required", "preferred"])
+    .describe("'required' for must-haves, 'preferred' for nice-to-haves"),
+  minYears: z
+    .number()
+    .optional()
+    .describe("Minimum years of experience with this specific skill, only if the posting states it. Omit otherwise."),
+});
+
+export const jobExtractionSchema = z.object({
+  skills: z.array(extractedRequirementSchema).max(40),
+});
+
+export type JobExtraction = z.infer<typeof jobExtractionSchema>;

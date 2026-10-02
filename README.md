@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReLaunch
 
-## Getting Started
+Evidence-based career re-entry platform. Candidates turn past experience into
+current, job-specific evidence. Employers review that evidence alongside the
+resume.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Next.js 15 (App Router), TypeScript, Tailwind, PostgreSQL, Prisma, Auth.js,
+Gemini API (resume extraction), Vitest.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install Node 20+, pnpm and Docker Desktop.
+2. Install dependencies: `pnpm install`
+3. Copy `.env.example` to `.env` and fill in the values
+   (generate `AUTH_SECRET` with `openssl rand -base64 32`; get a Gemini key
+   at https://aistudio.google.com/apikey).
+4. Start the database: `docker compose up -d`
+5. Apply migrations and seed demo data:
+   `pnpm prisma migrate dev` then `pnpm prisma db seed`
+6. Run the app: `pnpm dev` (http://localhost:3000)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Demo logins (local only, password `password123`):
+`aditi@example.com` (candidate), `hr@acme.example.com` (employer).
 
-## Learn More
+## Scripts
 
-To learn more about Next.js, take a look at the following resources:
+`pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Status
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Phase 0: foundation, auth with roles, dashboards (done)
+- Phase 1: candidate profile, resume upload, AI extraction, review (done)
+- Phase 2: employer jobs and requirement extraction (next)

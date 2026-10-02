@@ -40,7 +40,10 @@ model EmployerProfile {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyName String
+  website     String?
+  about       String?
   createdAt   DateTime @default(now())
+  jobs        Job[]
 }
 
 enum SkillSource {
@@ -79,6 +82,7 @@ model Skill {
   slug            String           @unique
   name            String
   candidateSkills CandidateSkill[]
+  jobSkills       JobSkill[]
 }
 
 model CandidateSkill {
@@ -97,16 +101,56 @@ model CandidateSkill {
 }
 
 model Resume {
-  id            String           @id @default(cuid())
-  candidateId   String
-  candidate     CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  fileName      String
-  storagePath   String
-  sizeBytes     Int
-  extractedText String?
+  id             String           @id @default(cuid())
+  candidateId    String
+  candidate      CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  fileName       String
+  storagePath    String
+  sizeBytes      Int
+  extractedText  String?
   extractionJson Json?
-  extractedAt   DateTime?
-  uploadedAt    DateTime         @default(now())
+  extractedAt    DateTime?
+  uploadedAt     DateTime         @default(now())
 
   @@index([candidateId])
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum SkillImportance {
+  REQUIRED
+  PREFERRED
+}
+
+model Job {
+  id             String          @id @default(cuid())
+  employerId     String
+  employer       EmployerProfile @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  status         JobStatus       @default(DRAFT)
+  extractionJson Json?
+  extractedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  skills         JobSkill[]
+
+  @@index([employerId])
+}
+
+model JobSkill {
+  id         String          @id @default(cuid())
+  jobId      String
+  job        Job             @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skillId    String
+  skill      Skill           @relation(fields: [skillId], references: [id])
+  importance SkillImportance
+  minYears   Float?
+
+  @@unique([jobId, skillId])
+  @@index([jobId])
 }

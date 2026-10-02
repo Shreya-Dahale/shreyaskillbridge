@@ -1,4 +1,4 @@
-const CURRENT_WORDS = ["present", "current", "now", "ongoing", "till date", "to date"];
+export const CURRENT_WORDS = ["present", "current", "now", "ongoing", "till date", "to date"];
 
 function utc(year: number, monthIndex: number, day: number) {
   return new Date(Date.UTC(year, monthIndex, day));

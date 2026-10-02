@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
 import { uploadResume, deleteResume, reextractResume, analyzeResume } from "@/app/actions/resume";
+import Link from "next/link";
 
 const errors: Record<string, string> = {
   missing: "Please choose a PDF file.",
@@ -112,12 +113,20 @@ export default async function ResumePage({
                 </div>
 
                 {r.extractionJson != null && (
-                  <details className="text-sm">
-                    <summary className="cursor-pointer">View AI result (raw)</summary>
-                    <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
-                      {JSON.stringify(r.extractionJson, null, 2)}
-                    </pre>
-                  </details>
+                  <div className="space-y-2 text-sm">
+                    <Link
+                      href={`/candidate/review/${r.id}`}
+                      className="inline-block rounded border px-3 py-1 underline"
+                    >
+                      Review and import to my profile
+                    </Link>
+                    <details>
+                      <summary className="cursor-pointer">View AI result (raw)</summary>
+                      <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
+                        {JSON.stringify(r.extractionJson, null, 2)}
+                      </pre>
+                    </details>
+                  </div>
                 )}
 
                 {r.extractedText && r.extractedText.length > 0 && (

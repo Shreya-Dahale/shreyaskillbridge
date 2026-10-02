@@ -81,3 +81,12 @@ export async function deleteCareerBreak(formData: FormData) {
   });
   revalidatePath(PATH);
 }
+
+export async function deleteCandidateSkill(formData: FormData) {
+  const profile = await requireCandidate();
+  const id = String(formData.get("id") ?? "");
+  await prisma.candidateSkill.deleteMany({
+    where: { id, candidateId: profile.id },
+  });
+  revalidatePath("/candidate/skills");
+}

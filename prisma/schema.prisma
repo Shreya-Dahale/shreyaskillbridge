@@ -83,6 +83,9 @@ model Skill {
   name            String
   candidateSkills CandidateSkill[]
   jobSkills       JobSkill[]
+  aliases         SkillAlias[]
+  relationsFrom   SkillRelation[]  @relation("RelationFrom")
+  relationsTo     SkillRelation[]  @relation("RelationTo")
 }
 
 model CandidateSkill {
@@ -153,4 +156,30 @@ model JobSkill {
 
   @@unique([jobId, skillId])
   @@index([jobId])
+}
+
+enum SkillRelationKind {
+  IMPLIES
+  RELATED
+}
+
+model SkillAlias {
+  id      String @id @default(cuid())
+  alias   String @unique
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@index([skillId])
+}
+
+model SkillRelation {
+  id     String            @id @default(cuid())
+  fromId String
+  from   Skill             @relation("RelationFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  toId   String
+  to     Skill             @relation("RelationTo", fields: [toId], references: [id], onDelete: Cascade)
+  kind   SkillRelationKind
+
+  @@unique([fromId, toId])
+  @@index([toId])
 }

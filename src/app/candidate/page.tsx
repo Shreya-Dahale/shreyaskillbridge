@@ -15,6 +15,9 @@ export default function CandidateHome() {
         <Link href="/candidate/skills" className={link}>
           Your skills
         </Link>
+        <Link href="/candidate/jobs" className={link}>
+          Find jobs
+        </Link>
       </div>
     </div>
   );

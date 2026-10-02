@@ -33,6 +33,7 @@ model CandidateProfile {
   careerBreaks  CareerBreak[]
   skills        CandidateSkill[]
   resumes       Resume[]
+  targets       TargetJob[]
 }
 
 model EmployerProfile {
@@ -141,6 +142,7 @@ model Job {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   skills         JobSkill[]
+  targets        TargetJob[]
 
   @@index([employerId])
 }
@@ -182,4 +184,16 @@ model SkillRelation {
 
   @@unique([fromId, toId])
   @@index([toId])
+}
+
+model TargetJob {
+  id          String           @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  jobId       String
+  job         Job              @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+
+  @@unique([candidateId, jobId])
+  @@index([jobId])
 }

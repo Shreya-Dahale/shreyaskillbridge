@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
 import { resumeExtractionSchema } from "@/lib/ai/schemas";
 import { slugify } from "@/lib/skills/slug";
+import { getOrCreateSkill } from "@/lib/skills/resolve";
 
 const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 const checked = (fd: FormData, key: string) => fd.get(key) === "on";
@@ -145,12 +146,7 @@ export async function confirmReview(formData: FormData) {
     }
 
     for (const s of skills) {
-      const slug = slugify(s.name);
-      const skill = await tx.skill.upsert({
-        where: { slug },
-        update: {},
-        create: { slug, name: s.name },
-      });
+      const skill = await getOrCreateSkill(tx, s.name);
       const values = {
         yearsExperience: s.years ?? null,
         lastUsedYear: s.last ?? null,

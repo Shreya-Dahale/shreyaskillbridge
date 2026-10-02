@@ -6,7 +6,8 @@ import { z } from "zod";
 import type { SkillImportance } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
-import { slugify } from "@/lib/skills/slug";
+import { canonicalSkill } from "@/lib/skills/canonical";
+import { getOrCreateSkill } from "@/lib/skills/resolve";
 
 const text = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 
@@ -37,7 +38,7 @@ export async function saveRequirements(formData: FormData) {
     const isPrefilled = i < prefillCount;
     if (isPrefilled ? formData.get(`skill.${i}.include`) !== "on" : !name) continue;
 
-    const slug = slugify(name);
+    const slug = canonicalSkill(name).slug;
     if (!name || name.length > 60 || !slug) redirect(`${back}?error=skills`);
 
     const importance = text(formData, `skill.${i}.importance`);
@@ -69,12 +70,9 @@ export async function saveRequirements(formData: FormData) {
   await prisma.$transaction(async (tx) => {
     await tx.jobSkill.deleteMany({ where: { jobId: job.id } });
 
-    for (const [slug, req] of bySlug) {
-      const skill = await tx.skill.upsert({
-        where: { slug },
-        update: {},
-        create: { slug, name: req.name },
-      });
+    for (const req of bySlug.values()) {
+      const skill = await getOrCreateSkill(tx, req.name);
+      
       await tx.jobSkill.create({
         data: {
           jobId: job.id,

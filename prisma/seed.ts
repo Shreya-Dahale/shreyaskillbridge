@@ -1,18 +1,14 @@
 import { PrismaClient, type SkillImportance } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { slugify } from "../src/lib/skills/slug";
+import { getOrCreateSkill } from "../src/lib/skills/resolve";
+import { syncTaxonomy } from "../src/lib/skills/sync-taxonomy";
 
 const prisma = new PrismaClient();
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
 
 async function skillId(name: string) {
-  const slug = slugify(name);
-  const skill = await prisma.skill.upsert({
-    where: { slug },
-    update: {},
-    create: { slug, name },
-  });
+  const skill = await getOrCreateSkill(prisma, name);
   return skill.id;
 }
 
@@ -167,6 +163,7 @@ async function seedEmployer(passwordHash: string) {
 
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
+  await syncTaxonomy(prisma);
   await seedCandidate(passwordHash);
   await seedEmployer(passwordHash);
 }

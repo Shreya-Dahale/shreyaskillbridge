@@ -82,10 +82,17 @@ export default async function CandidateJobsPage({
                     {!open && " · No longer open"}
                   </p>
                 </div>
-                <form action={removeTarget}>
-                  <input type="hidden" name="jobId" value={t.jobId} />
-                  <button className="text-sm text-red-600 underline">Remove</button>
-                </form>
+                <div className="flex items-center gap-4 text-sm">
+                  {open && (
+                    <Link href={`/candidate/jobs/${t.jobId}/gap`} className="underline">
+                      How I compare
+                    </Link>
+                  )}
+                  <form action={removeTarget}>
+                    <input type="hidden" name="jobId" value={t.jobId} />
+                    <button className="text-red-600 underline">Remove</button>
+                  </form>
+                </div>
               </li>
             );
           })}

@@ -64,7 +64,12 @@ export default async function CandidateJobDetailPage({
           </form>
         )}
       </div>
-
+      <Link
+        href={`/candidate/jobs/${job.id}/gap`}
+        className="inline-block rounded border px-4 py-2 underline"
+      >
+        See how your skills compare
+      </Link> 
       <section className="space-y-2 text-sm">
         <h2 className="text-lg font-medium">Requirements</h2>
         <div>

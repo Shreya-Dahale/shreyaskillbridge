@@ -90,6 +90,12 @@ export default async function GapPage({
           skills and any assessments you complete. Your career break is not part of this comparison, and
           the result is not a score. Every status comes with a reason.
         </p>
+        <p className="text-sm">
+          <Link href="/candidate/tasks" className="underline">
+            Try a practice task
+          </Link>{" "}
+          to build evidence for a skill.
+        </p>
       </div>
 
       {!hasSkills && (

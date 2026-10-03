@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
+import { gradeSubmission } from "@/lib/grading/grade";
 
 const MAX_CODE_CHARS = 20_000;
 const MAX_SUBMISSIONS_PER_HOUR = 30;
@@ -30,15 +31,37 @@ export async function submitCode(formData: FormData) {
   });
   if (recent >= MAX_SUBMISSIONS_PER_HOUR) redirect(`${back}?error=limit`);
 
-  await prisma.submission.create({
+  const submission = await prisma.submission.create({
     data: {
       candidateId: profile.id,
       taskId: task.id,
       code,
       totalCount: task._count.testCases,
     },
+    select: { id: true },
   });
 
+  await gradeSubmission(submission.id, profile.id);
+
   revalidatePath(back);
+  revalidatePath("/candidate/tasks");
   redirect(`${back}?submitted=1`);
+}
+
+export async function regradeSubmission(formData: FormData) {
+  const profile = await requireCandidate();
+  const id = String(formData.get("id") ?? "");
+
+  const submission = await prisma.submission.findFirst({
+    where: { id, candidateId: profile.id },
+    select: { id: true, task: { select: { slug: true } } },
+  });
+  if (!submission) redirect("/candidate/tasks");
+
+  await gradeSubmission(submission.id, profile.id);
+
+  const back = `/candidate/tasks/${encodeURIComponent(submission.task.slug)}`;
+  revalidatePath(back);
+  revalidatePath("/candidate/tasks");
+  redirect(back);
 }

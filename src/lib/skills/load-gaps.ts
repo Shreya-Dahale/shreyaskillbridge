@@ -21,7 +21,7 @@ export async function loadGapAnalysis(candidateId: string, jobId: string) {
   });
   if (!job) return null;
 
-  const [candidateSkills, relations] = await Promise.all([
+  const [candidateSkills, relations, evidence] = await Promise.all([
     prisma.candidateSkill.findMany({
       where: { candidateId },
       select: {
@@ -32,6 +32,10 @@ export async function loadGapAnalysis(candidateId: string, jobId: string) {
     }),
     prisma.skillRelation.findMany({
       select: { fromId: true, toId: true, kind: true },
+    }),
+    prisma.evidence.findMany({
+      where: { candidateId },
+      select: { skillId: true, kind: true, occurredAt: true },
     }),
   ]);
 
@@ -48,7 +52,11 @@ export async function loadGapAnalysis(candidateId: string, jobId: string) {
       yearsExperience: cs.yearsExperience,
       lastUsedYear: cs.lastUsedYear,
     })),
-    evidence: [], // Phase 4 adds assessment results here
+    evidence: evidence.map((e) => ({
+      skillId: e.skillId,
+      kind: e.kind,
+      date: e.occurredAt,
+    })),
     relations,
   });
 

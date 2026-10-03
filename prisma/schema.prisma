@@ -34,6 +34,8 @@ model CandidateProfile {
   skills        CandidateSkill[]
   resumes       Resume[]
   targets       TargetJob[]
+  submissions   Submission[]
+  evidence      Evidence[]
 }
 
 model EmployerProfile {
@@ -87,6 +89,8 @@ model Skill {
   aliases         SkillAlias[]
   relationsFrom   SkillRelation[]  @relation("RelationFrom")
   relationsTo     SkillRelation[]  @relation("RelationTo")
+  taskSkills      TaskSkill[]
+  evidence        Evidence[]
 }
 
 model CandidateSkill {
@@ -196,4 +200,95 @@ model TargetJob {
 
   @@unique([candidateId, jobId])
   @@index([jobId])
+}
+
+enum TaskKind {
+  JAVA_CODE
+  SQL
+  PROJECT
+}
+
+enum SubmissionStatus {
+  QUEUED
+  RUNNING
+  PASSED
+  FAILED
+  ERROR
+}
+
+enum EvidenceKind {
+  PASSED
+  IN_PROGRESS
+}
+
+model Task {
+  id           String         @id @default(cuid())
+  slug         String         @unique
+  title        String
+  kind         TaskKind
+  instructions String
+  starterCode  String         @default("")
+  timeLimitMs  Int            @default(3000)
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  skills       TaskSkill[]
+  testCases    TaskTestCase[]
+  submissions  Submission[]
+  evidence     Evidence[]
+}
+
+model TaskSkill {
+  id      String @id @default(cuid())
+  taskId  String
+  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id])
+
+  @@unique([taskId, skillId])
+  @@index([skillId])
+}
+
+model TaskTestCase {
+  id             String  @id @default(cuid())
+  taskId         String
+  task           Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label          String
+  input          String  @default("")
+  expectedOutput String
+  hidden         Boolean @default(true)
+  position       Int
+
+  @@index([taskId])
+}
+
+model Submission {
+  id          String           @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  taskId      String
+  task        Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  code        String
+  status      SubmissionStatus @default(QUEUED)
+  passedCount Int              @default(0)
+  totalCount  Int              @default(0)
+  resultJson  Json?
+  createdAt   DateTime         @default(now())
+  gradedAt    DateTime?
+
+  @@index([candidateId, taskId])
+}
+
+model Evidence {
+  id          String           @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill            @relation(fields: [skillId], references: [id])
+  taskId      String?
+  task        Task?            @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  kind        EvidenceKind
+  occurredAt  DateTime
+
+  @@unique([candidateId, skillId, taskId, kind])
+  @@index([candidateId])
 }

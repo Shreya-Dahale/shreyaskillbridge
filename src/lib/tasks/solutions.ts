@@ -1,4 +1,5 @@
 import { SQL_SOLUTIONS } from "./sql-solutions";
+import { REST_SOLUTIONS } from "./rest-solutions";
 // Reference solutions, used only by tools/verify-tasks.ts and tests.
 // Never import this file from app pages or actions, and never store it in the database.
 const JAVA_SOLUTIONS: Record<string, string> = {
@@ -55,4 +56,4 @@ public class Main {
 `,
 };
 
-export const REFERENCE_SOLUTIONS: Record<string, string> = { ...JAVA_SOLUTIONS, ...SQL_SOLUTIONS };
+export const REFERENCE_SOLUTIONS: Record<string, string> = { ...JAVA_SOLUTIONS, ...REST_SOLUTIONS, ...SQL_SOLUTIONS };

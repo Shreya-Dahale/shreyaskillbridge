@@ -1,4 +1,5 @@
 import { SQL_TASKS } from "./sql-tasks";
+import { REST_TASKS } from "./rest-tasks";
 export type TaskTestCaseDef = {
   label: string;
   input: string;
@@ -194,4 +195,4 @@ public class Main {
   },
 ];
 
-export const TASK_LIBRARY: TaskDefinition[] = [...JAVA_TASKS, ...SQL_TASKS];
+export const TASK_LIBRARY: TaskDefinition[] = [...JAVA_TASKS, ...REST_TASKS, ...SQL_TASKS];

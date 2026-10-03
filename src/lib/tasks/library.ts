@@ -1,3 +1,4 @@
+import { SQL_TASKS } from "./sql-tasks";
 export type TaskTestCaseDef = {
   label: string;
   input: string;
@@ -7,6 +8,7 @@ export type TaskTestCaseDef = {
 
 export type TaskDefinition = {
   slug: string;
+  kind?: "JAVA_CODE" | "SQL";
   title: string;
   skills: string[];
   instructions: string;
@@ -15,7 +17,7 @@ export type TaskDefinition = {
   testCases: TaskTestCaseDef[];
 };
 
-export const TASK_LIBRARY: TaskDefinition[] = [
+const JAVA_TASKS: TaskDefinition[] = [
   {
     slug: "java-average",
     title: "Fix the average calculator",
@@ -191,3 +193,5 @@ public class Main {
     ],
   },
 ];
+
+export const TASK_LIBRARY: TaskDefinition[] = [...JAVA_TASKS, ...SQL_TASKS];

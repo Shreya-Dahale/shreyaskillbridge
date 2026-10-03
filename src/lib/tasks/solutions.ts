@@ -1,6 +1,7 @@
+import { SQL_SOLUTIONS } from "./sql-solutions";
 // Reference solutions, used only by tools/verify-tasks.ts and tests.
 // Never import this file from app pages or actions, and never store it in the database.
-export const REFERENCE_SOLUTIONS: Record<string, string> = {
+const JAVA_SOLUTIONS: Record<string, string> = {
   "java-average": `import java.util.Locale;
 import java.util.Scanner;
 
@@ -53,3 +54,5 @@ public class Main {
 }
 `,
 };
+
+export const REFERENCE_SOLUTIONS: Record<string, string> = { ...JAVA_SOLUTIONS, ...SQL_SOLUTIONS };

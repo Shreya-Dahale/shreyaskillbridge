@@ -7,7 +7,7 @@ export default async function TasksPage() {
 
   const [tasks, submissions] = await Promise.all([
     prisma.task.findMany({
-      where: { active: true, kind: "JAVA_CODE" },
+      where: { active: true, kind: { in: ["JAVA_CODE", "SQL"] } },
       orderBy: { slug: "asc" },
       select: {
         id: true,

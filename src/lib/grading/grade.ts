@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { runJava } from "./piston";
-import { judgeCase } from "./judge";
+import { runJava, runSql } from "./piston";
+import { judgeCase, judgeSqlCase } from "./judge";
 import type { GradeResult } from "./result";
 
 type Db = Prisma.TransactionClient;
@@ -55,6 +55,7 @@ export async function gradeSubmission(submissionId: string, candidateId: string)
         task: {
           select: {
             id: true,
+            kind: true,
             timeLimitMs: true,
             testCases: {
               orderBy: { position: "asc" },
@@ -78,8 +79,11 @@ export async function gradeSubmission(submissionId: string, candidateId: string)
         continue;
       }
 
-      const run = await runJava(submission.code, tc.input, task.timeLimitMs);
-      const verdict = judgeCase(run, tc.expectedOutput);
+      const isSql = task.kind === "SQL";
+      const run = isSql
+        ? await runSql(tc.input, submission.code, task.timeLimitMs)
+        : await runJava(submission.code, tc.input, task.timeLimitMs);
+      const verdict = isSql ? judgeSqlCase(run, tc.expectedOutput) : judgeCase(run, tc.expectedOutput);
 
       if (verdict === "COMPILE_ERROR") compileError = run.stderr.slice(0, 2000);
       if (verdict === "COMPILE_ERROR" || verdict === "LIMIT_EXCEEDED") stopped = true;
@@ -94,7 +98,7 @@ export async function gradeSubmission(submissionId: string, candidateId: string)
           verdict,
           actual: run.stdout.slice(0, 1000),
           stderr:
-            verdict === "RUNTIME_ERROR" || verdict === "LIMIT_EXCEEDED"
+            verdict === "RUNTIME_ERROR" || verdict === "SQL_ERROR" || verdict === "LIMIT_EXCEEDED"
               ? run.stderr.slice(0, 1000)
               : undefined,
         });

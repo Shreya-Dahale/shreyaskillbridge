@@ -37,8 +37,15 @@ describe("task library", () => {
         const solution = REFERENCE_SOLUTIONS[task.slug];
         expect(solution, "missing reference solution").toBeTruthy();
         expect(solution).not.toBe(task.starterCode);
-        expect(solution).toContain("public class Main");
-        expect(task.starterCode).toContain("public class Main");
+        if ((task.kind ?? "JAVA_CODE") === "SQL") {
+          expect(solution.toUpperCase()).toContain("SELECT");
+          for (const tc of task.testCases) {
+            expect(tc.input.toUpperCase(), `${tc.label} has no table setup`).toContain("CREATE TABLE");
+          }
+        } else {
+          expect(solution).toContain("public class Main");
+          expect(task.starterCode).toContain("public class Main");
+        }
       });
     });
   }

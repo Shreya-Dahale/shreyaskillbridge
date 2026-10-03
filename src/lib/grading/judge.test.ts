@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { judgeCase } from "./judge";
+import { judgeCase, judgeSqlCase } from "./judge";
 import type { RunResult } from "./piston";
 
 const base: RunResult = {
@@ -38,5 +38,38 @@ describe("judgeCase", () => {
 
   it("puts compile errors first", () => {
     expect(judgeCase(run({ compileError: true, exitCode: 1, killed: true }), "2.00")).toBe("COMPILE_ERROR");
+  });
+});
+
+describe("judgeSqlCase", () => {
+  const sqlRun = (overrides: Partial<RunResult>): RunResult =>
+    run({ stdout: "Eng|180\n", ...overrides });
+
+  it("passes when the rows match", () => {
+    expect(judgeSqlCase(sqlRun({}), "Eng|180")).toBe("PASSED");
+  });
+
+  it("reports wrong rows", () => {
+    expect(judgeSqlCase(sqlRun({ stdout: "Ops|60\n" }), "Eng|180")).toBe("WRONG_ANSWER");
+    expect(judgeSqlCase(sqlRun({ stdout: "" }), "Eng|180")).toBe("WRONG_ANSWER");
+  });
+
+  it("reports query errors", () => {
+    expect(
+      judgeSqlCase(sqlRun({ exitCode: 3, stdout: "", stderr: "SQL error: no such table: staff" }), "Eng|180")
+    ).toBe("SQL_ERROR");
+    expect(judgeSqlCase(sqlRun({ exitCode: 4, stdout: "", stderr: "Too many rows" }), "Eng|180")).toBe("SQL_ERROR");
+  });
+
+  it("treats a query stopped for doing too much work as a limit", () => {
+    expect(
+      judgeSqlCase(sqlRun({ exitCode: 3, stdout: "", stderr: "SQL error: interrupted" }), "Eng|180")
+    ).toBe("LIMIT_EXCEEDED");
+  });
+
+  it("treats a sandbox kill as a limit", () => {
+    expect(judgeSqlCase(sqlRun({ exitCode: null, signal: "SIGKILL", killed: true }), "Eng|180")).toBe(
+      "LIMIT_EXCEEDED"
+    );
   });
 });

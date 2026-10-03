@@ -16,7 +16,7 @@ export async function submitCode(formData: FormData) {
   const back = `/candidate/tasks/${encodeURIComponent(slug)}`;
 
   const task = await prisma.task.findFirst({
-    where: { slug, active: true, kind: "JAVA_CODE" },
+    where: { slug, active: true, kind: { in: ["JAVA_CODE", "SQL"] } },
     select: { id: true, _count: { select: { testCases: true } } },
   });
   if (!task) redirect("/candidate/tasks");

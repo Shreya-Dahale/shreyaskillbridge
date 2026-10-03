@@ -9,7 +9,7 @@ export async function syncTasks(db: Db) {
   for (const def of TASK_LIBRARY) {
     const data = {
       title: def.title,
-      kind: "JAVA_CODE" as const,
+      kind: def.kind ?? ("JAVA_CODE" as const),
       instructions: def.instructions,
       starterCode: def.starterCode,
       timeLimitMs: def.timeLimitMs,

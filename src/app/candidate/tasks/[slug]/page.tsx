@@ -32,11 +32,12 @@ export default async function TaskPage({
   const profile = await requireCandidate();
 
   const task = await prisma.task.findFirst({
-    where: { slug, active: true, kind: "JAVA_CODE" },
+    where: { slug, active: true, kind: { in: ["JAVA_CODE", "SQL"] } },
     select: {
       id: true,
       slug: true,
       title: true,
+      kind: true,
       instructions: true,
       starterCode: true,
       timeLimitMs: true,
@@ -82,7 +83,7 @@ export default async function TaskPage({
       <div>
         <h1 className="text-2xl font-semibold">{task.title}</h1>
         <p className="text-sm text-gray-500">
-          Builds evidence for: {skillNames} · Java · each test case must finish within{" "}
+          Builds evidence for: {skillNames} · {task.kind === "SQL" ? "SQL" : "Java"} · each test case must finish within{" "}
           {task.timeLimitMs / 1000} seconds
         </p>
       </div>
@@ -123,11 +124,11 @@ export default async function TaskPage({
               <p className="font-medium">{tc.label}</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <p className="text-xs text-gray-500">Input</p>
+                  <p className="text-xs text-gray-500">{task.kind === "SQL" ? "Sample data (SQL)" : "Input"}</p>
                   <pre className="whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs">{tc.input}</pre>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500">Expected output</p>
+                  <p className="text-xs text-gray-500">{task.kind === "SQL" ? "Expected rows" : "Expected output"}</p>
                   <pre className="whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs">{tc.expectedOutput}</pre>
                 </div>
               </div>
@@ -158,8 +159,9 @@ export default async function TaskPage({
             className="w-full rounded border p-3 font-mono text-sm"
           />
           <p className="text-xs text-gray-500">
-            Your class must be called Main. The Tab key moves between fields, so use spaces to indent. Grading can
-            take a few seconds.
+            {task.kind === "SQL"
+              ? "Write exactly one SELECT statement. Use spaces to indent, because the Tab key moves between fields. Grading can take a few seconds."
+              : "Your class must be called Main. The Tab key moves between fields, so use spaces to indent. Grading can take a few seconds."}
           </p>
           <button className="rounded bg-black px-5 py-2 text-white">Submit</button>
         </form>
@@ -223,7 +225,7 @@ export default async function TaskPage({
                                   </pre>
                                 </div>
                                 <div>
-                                  <p className="text-xs text-gray-500">Expected output</p>
+                                  <p className="text-xs text-gray-500">{task.kind === "SQL" ? "Expected rows" : "Expected output"}</p>
                                   <pre className="whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs">
                                     {expectedByLabel.get(c.label) ?? ""}
                                   </pre>

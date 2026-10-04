@@ -66,7 +66,12 @@ export default async function SharePage() {
       />
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold">Your links</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Your links</h2>
+          <Link href="/candidate/share/activity" className="text-sm underline">
+            See who viewed your profile
+          </Link>
+        </div>
         {links.length === 0 && <p className="text-sm text-gray-500">You have not created any links yet.</p>}
         <ul className="space-y-3">
           {links.map((link) => {

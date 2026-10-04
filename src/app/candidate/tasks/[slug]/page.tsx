@@ -128,7 +128,7 @@ export default async function TaskPage({
       )}
       {error && <Notice tone="error">{errors[error] ?? "Something went wrong."}</Notice>}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 xl:grid-cols-2">
         <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader>

@@ -2,6 +2,7 @@ import { PrismaClient, type SkillImportance } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { getOrCreateSkill } from "../src/lib/skills/resolve";
 import { syncTaxonomy } from "../src/lib/skills/sync-taxonomy";
+import { syncTasks } from "../src/lib/tasks/sync-tasks";
 
 const prisma = new PrismaClient();
 
@@ -164,6 +165,7 @@ async function seedEmployer(passwordHash: string) {
 async function main() {
   const passwordHash = await bcrypt.hash("password123", 12);
   await syncTaxonomy(prisma);
+  await syncTasks(prisma);
   await seedCandidate(passwordHash);
   await seedEmployer(passwordHash);
 }

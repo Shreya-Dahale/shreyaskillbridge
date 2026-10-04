@@ -1,7 +1,23 @@
-import { prisma } from "@/lib/db";
-import { requireCandidate } from "@/lib/candidate";
-import { uploadResume, deleteResume, reextractResume, analyzeResume } from "@/app/actions/resume";
 import Link from "next/link";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ExternalLink,
+  FileText,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { Notice } from "@/components/Notice";
+import { PageHeader } from "@/components/PageHeader";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { analyzeResume, deleteResume, reextractResume, uploadResume } from "@/app/actions/resume";
+import { requireCandidate } from "@/lib/candidate";
+import { prisma } from "@/lib/db";
 
 const errors: Record<string, string> = {
   missing: "Please choose a PDF file.",
@@ -12,9 +28,7 @@ const errors: Record<string, string> = {
 };
 
 function extractionStatus(text: string | null) {
-  if (text === null) {
-    return { ok: false, label: "Text hasn't been extracted yet." };
-  }
+  if (text === null) return { ok: false, label: "Text hasn't been extracted yet." };
   if (text.length < 100) {
     return {
       ok: false,
@@ -22,7 +36,7 @@ function extractionStatus(text: string | null) {
         "No readable text found. This may be a scanned PDF. Please upload a text-based PDF (for example, exported from Word or Google Docs).",
     };
   }
-  return { ok: true, label: `${text.length.toLocaleString()} characters extracted.` };
+  return { ok: true, label: `${text.length.toLocaleString("en-GB")} characters extracted.` };
 }
 
 export default async function ResumePage({
@@ -38,109 +52,140 @@ export default async function ResumePage({
   });
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <h1 className="text-2xl font-semibold">Your resume</h1>
-      {error && (
-        <p className="rounded border border-red-300 p-3 text-sm text-red-700">
-          {errors[error] ?? "Something went wrong."}
-        </p>
-      )}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Resume"
+        description="Upload a text-based PDF. AI reads it, and you review and correct everything before anything is saved to your profile."
+      />
 
-      <form action={uploadResume} className="space-y-3 rounded border p-4">
-        <p className="text-sm font-medium">Upload a PDF (max 5 MB)</p>
-        <input name="resume" type="file" accept="application/pdf" required />
-        <div>
-          <button className="rounded bg-black px-4 py-2 text-white">Upload</button>
-        </div>
-      </form>
+      {error && <Notice tone="error">{errors[error] ?? "Something went wrong."}</Notice>}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Upload a resume</CardTitle>
+          <CardDescription>PDF only, up to 5 MB. Only you can open the file.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={uploadResume} className="flex flex-col gap-2 sm:flex-row">
+            <Input name="resume" type="file" accept="application/pdf" aria-label="Resume PDF" required />
+            <Button type="submit">
+              <Upload /> Upload
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Uploaded resumes</h2>
-        {resumes.length === 0 && (
-          <p className="text-sm text-gray-500">Nothing uploaded yet.</p>
+        <h2 className="text-lg font-semibold">Uploaded resumes</h2>
+        {resumes.length === 0 ? (
+          <EmptyState icon={FileText} title="Nothing uploaded yet">
+            Upload a resume above to extract your roles and skills.
+          </EmptyState>
+        ) : (
+          <ul className="space-y-3">
+            {resumes.map((r) => {
+              const status = extractionStatus(r.extractedText);
+              return (
+                <li key={r.id}>
+                  <Card>
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                            <FileText className="size-5" aria-hidden="true" />
+                          </span>
+                          <div>
+                            <p className="text-sm font-medium">{r.fileName}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {(r.sizeBytes / 1024).toFixed(0)} KB · uploaded {r.uploadedAt.toLocaleDateString("en-GB")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <a
+                            href={`/api/resume/${r.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={buttonVariants({ variant: "outline", size: "sm" })}
+                          >
+                            <ExternalLink /> View
+                          </a>
+                          <form action={deleteResume}>
+                            <input type="hidden" name="id" value={r.id} />
+                            <Button
+                              type="submit"
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 /> Delete
+                            </Button>
+                          </form>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/60 p-3 text-sm">
+                        <p className={status.ok ? "flex items-center gap-2 text-green-700" : "flex items-center gap-2 text-amber-700"}>
+                          {status.ok ? (
+                            <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
+                          ) : (
+                            <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                          )}
+                          {status.label}
+                        </p>
+                        <form action={reextractResume}>
+                          <input type="hidden" name="id" value={r.id} />
+                          <Button type="submit" variant="outline" size="sm">
+                            <RefreshCw /> Re-run extraction
+                          </Button>
+                        </form>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-muted/60 p-3 text-sm">
+                        <p className="text-muted-foreground">
+                          {r.extractedAt
+                            ? `AI analysis done on ${r.extractedAt.toLocaleString("en-GB")}`
+                            : "Not analyzed yet."}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          {r.extractionJson != null && (
+                            <Link href={`/candidate/review/${r.id}`} className={buttonVariants({ size: "sm" })}>
+                              Review and import
+                            </Link>
+                          )}
+                          <form action={analyzeResume}>
+                            <input type="hidden" name="id" value={r.id} />
+                            <Button type="submit" variant={r.extractionJson != null ? "outline" : "default"} size="sm">
+                              <Sparkles /> {r.extractionJson != null ? "Analyze again" : "Analyze with AI"}
+                            </Button>
+                          </form>
+                        </div>
+                      </div>
+
+                      {r.extractionJson != null && (
+                        <details className="text-sm">
+                          <summary className="cursor-pointer text-muted-foreground">View AI result (raw)</summary>
+                          <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 text-xs">
+                            {JSON.stringify(r.extractionJson, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+
+                      {r.extractedText && r.extractedText.length > 0 && (
+                        <details className="text-sm">
+                          <summary className="cursor-pointer text-muted-foreground">Preview extracted text</summary>
+                          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 text-xs">
+                            {r.extractedText.slice(0, 1500)}
+                          </pre>
+                        </details>
+                      )}
+                    </CardContent>
+                  </Card>
+                </li>
+              );
+            })}
+          </ul>
         )}
-        <ul className="space-y-3">
-          {resumes.map((r) => {
-            const status = extractionStatus(r.extractedText);
-            return (
-              <li key={r.id} className="space-y-3 rounded border p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{r.fileName}</p>
-                    <p className="text-sm text-gray-500">
-                      {(r.sizeBytes / 1024).toFixed(0)} KB ·{" "}
-                      {r.uploadedAt.toLocaleDateString("en-GB")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <a
-                      href={`/api/resume/${r.id}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline"
-                    >
-                      View
-                    </a>
-                    <form action={deleteResume}>
-                      <input type="hidden" name="id" value={r.id} />
-                      <button className="text-red-600 underline">Delete</button>
-                    </form>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <p className={status.ok ? "text-green-700" : "text-amber-700"}>
-                    {status.label}
-                  </p>
-                  <form action={reextractResume}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <button className="whitespace-nowrap underline">Re-run extraction</button>
-                  </form>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <p className="text-gray-500">
-                    {r.extractedAt
-                      ? `AI analysis done on ${r.extractedAt.toLocaleString("en-GB")}`
-                      : "Not analyzed yet."}
-                  </p>
-                  <form action={analyzeResume}>
-                    <input type="hidden" name="id" value={r.id} />
-                    <button className="whitespace-nowrap rounded bg-black px-3 py-1 text-white">
-                      Analyze with AI
-                    </button>
-                  </form>
-                </div>
-
-                {r.extractionJson != null && (
-                  <div className="space-y-2 text-sm">
-                    <Link
-                      href={`/candidate/review/${r.id}`}
-                      className="inline-block rounded border px-3 py-1 underline"
-                    >
-                      Review and import to my profile
-                    </Link>
-                    <details>
-                      <summary className="cursor-pointer">View AI result (raw)</summary>
-                      <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
-                        {JSON.stringify(r.extractionJson, null, 2)}
-                      </pre>
-                    </details>
-                  </div>
-                )}
-
-                {r.extractedText && r.extractedText.length > 0 && (
-                  <details className="text-sm">
-                    <summary className="cursor-pointer">Preview extracted text</summary>
-                    <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
-                      {r.extractedText.slice(0, 1500)}
-                    </pre>
-                  </details>
-                )}
-              </li>
-            );
-          })}
-        </ul>
       </section>
     </div>
   );

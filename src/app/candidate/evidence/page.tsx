@@ -4,6 +4,7 @@ import { requireCandidate } from "@/lib/candidate";
 import { buildSharedProfile } from "@/lib/profile/build-profile";
 import { loadProfileSource } from "@/lib/profile/load-source";
 import { SETTING_FIELDS, settingsFromSearchParams } from "@/lib/profile/settings";
+import Link from "next/link";
 
 export default async function EvidencePreviewPage({
   searchParams,
@@ -27,6 +28,9 @@ export default async function EvidencePreviewPage({
           This is a private preview of what an employer would see. Nothing is shared with anyone until you create
           a share link. Choose what to include, then press Update preview.
         </p>
+        <Link href="/candidate/share" className="mt-2 inline-block text-sm underline">
+          Create a share link
+        </Link>
       </div>
 
       <form method="get" className="space-y-3 rounded-lg border bg-white p-5 shadow-sm">

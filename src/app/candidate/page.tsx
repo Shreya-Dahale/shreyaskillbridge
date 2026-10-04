@@ -24,6 +24,9 @@ export default function CandidateHome() {
         <Link href="/candidate/evidence" className={link}>
           Your evidence profile
         </Link>
+        <Link href="/candidate/share" className={link}>
+          Share your profile
+        </Link>
       </div>
     </div>
   );

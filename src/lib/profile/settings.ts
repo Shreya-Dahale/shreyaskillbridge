@@ -37,3 +37,8 @@ export function settingsFromSearchParams(params: Params): ShareSettings {
     includeBreak: on("includeBreak"),
   };
 }
+
+/** The labels of the sections a link includes, for showing in a list. */
+export function includedLabels(settings: ShareSettings): string[] {
+  return SETTING_FIELDS.filter((f) => settings[f.key]).map((f) => f.label);
+}

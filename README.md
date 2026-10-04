@@ -55,6 +55,14 @@ code through Piston to prove the tasks are fair; needs Piston running)
   production run it on its own isolated machine, never alongside the database.
 - Hidden test cases and reference solutions never leave the server.
 - Career-break dates never enter the skill-gap engine.
+- Share links use 256-bit random tokens, and only a SHA-256 hash is stored. The
+  full link is shown once, when it is created.
+- A shared profile is built by a single function from the link's settings, so a
+  section the candidate excluded is absent from the data, not just hidden.
+  Contact details, the resume file and any reason for a career break are never
+  part of it.
+- Every refusal on a share link (unknown, expired, revoked or not permitted)
+  shows the same neutral page.
 
 ## Status
 
@@ -63,4 +71,6 @@ code through Piston to prove the tasks are fair; needs Piston running)
 - Phase 2: employer company profile, jobs, AI requirement extraction, review and publish (done)
 - Phase 3: skill taxonomy, target jobs, skill-gap engine and analysis page (done)
 - Phase 4: assessment engine with Java, REST and SQL practice tasks (done); project review deferred
-- Phase 5: evidence profile (next)
+- Phase 5: evidence profile, share links, employer view and access log (done)
+- Design pass: professional UI and charts (next)
+- Phase 6: employer candidate discovery and invitations

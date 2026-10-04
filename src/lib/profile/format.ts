@@ -21,3 +21,8 @@ export function compareNames(a: string, b: string): number {
   const y = b.toLowerCase();
   return x < y ? -1 : x > y ? 1 : 0;
 }
+
+/** "Sep 2019". */
+export function formatMonthYear(d: Date): string {
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}

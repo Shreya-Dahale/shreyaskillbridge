@@ -21,6 +21,9 @@ export default function CandidateHome() {
         <Link href="/candidate/tasks" className={link}>
           Practice tasks
         </Link>
+        <Link href="/candidate/evidence" className={link}>
+          Your evidence profile
+        </Link>
       </div>
     </div>
   );

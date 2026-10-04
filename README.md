@@ -72,5 +72,6 @@ code through Piston to prove the tasks are fair; needs Piston running)
 - Phase 3: skill taxonomy, target jobs, skill-gap engine and analysis page (done)
 - Phase 4: assessment engine with Java, REST and SQL practice tasks (done); project review deferred
 - Phase 5: evidence profile, share links, employer view and access log (done)
-- Design pass: professional UI and charts (next)
+- Design A: design system, app shell, landing page, auth screens, profile timeline (done)
+- Design B: restyle the remaining pages and build the dashboards with charts (next)
 - Phase 6: employer candidate discovery and invitations

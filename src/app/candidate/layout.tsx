@@ -1,12 +1,12 @@
 import { auth } from "@/auth";
-import { AppHeader } from "@/components/AppHeader";
+import { AppShell } from "@/components/shell/AppShell";
+import { CANDIDATE_NAV } from "@/components/shell/nav";
 
 export default async function CandidateLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   return (
-    <>
-      <AppHeader title="Build Your Evidence" name={session?.user?.name} />
-      <div className="p-6">{children}</div>
-    </>
+    <AppShell section="Build your evidence" items={CANDIDATE_NAV} userName={session?.user?.name}>
+      {children}
+    </AppShell>
   );
 }

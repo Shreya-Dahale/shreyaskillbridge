@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -127,4 +127,13 @@
   html {
     @apply font-sans;
   }
+}
+
+/* ReLaunch brand colours. Placed last so they override the defaults above. */
+:root {
+  --primary: oklch(0.47 0.19 265);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.6 0.15 265);
+  --accent: oklch(0.95 0.03 265);
+  --accent-foreground: oklch(0.3 0.1 265);
 }

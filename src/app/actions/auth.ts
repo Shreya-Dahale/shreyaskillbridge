@@ -43,14 +43,19 @@ export async function register(formData: FormData) {
 }
 
 export async function login(formData: FormData) {
+  const next = String(formData.get("next") ?? "");
+  const validNext = /^\/p\/[A-Za-z0-9_-]{43}$/.test(next) ? next : null;
+
   try {
     await signIn("credentials", {
       email: formData.get("email"),
       password: formData.get("password"),
-      redirectTo: "/",
+      redirectTo: validNext ?? "/",
     });
   } catch (e) {
-    if (e instanceof AuthError) redirect("/login?error=1");
+    if (e instanceof AuthError) {
+      redirect(validNext ? `/login?error=1&next=${encodeURIComponent(validNext)}` : "/login?error=1");
+    }
     throw e;
   }
 }

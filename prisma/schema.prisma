@@ -36,17 +36,19 @@ model CandidateProfile {
   targets       TargetJob[]
   submissions   Submission[]
   evidence      Evidence[]
+  shareLinks    ShareLink[]
 }
 
 model EmployerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyName String
   website     String?
   about       String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime    @default(now())
   jobs        Job[]
+  shareViews  ShareView[]
 }
 
 enum SkillSource {
@@ -291,4 +293,43 @@ model Evidence {
 
   @@unique([candidateId, skillId, taskId, kind])
   @@index([candidateId])
+}
+
+enum ShareAudience {
+  EMPLOYERS
+  ANYONE
+}
+
+model ShareLink {
+  id                 String           @id @default(cuid())
+  candidateId        String
+  candidate          CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  label              String?
+  tokenHash          String           @unique
+  audience           ShareAudience    @default(EMPLOYERS)
+  showName           Boolean          @default(false)
+  includeHeadline    Boolean          @default(true)
+  includeSkills      Boolean          @default(true)
+  includeAssessments Boolean          @default(true)
+  includeSummary     Boolean          @default(true)
+  includeRoles       Boolean          @default(false)
+  includeBreak       Boolean          @default(false)
+  expiresAt          DateTime
+  revokedAt          DateTime?
+  createdAt          DateTime         @default(now())
+  views              ShareView[]
+
+  @@index([candidateId])
+}
+
+model ShareView {
+  id               String           @id @default(cuid())
+  shareLinkId      String
+  shareLink        ShareLink        @relation(fields: [shareLinkId], references: [id], onDelete: Cascade)
+  viewerEmployerId String?
+  viewerEmployer   EmployerProfile? @relation(fields: [viewerEmployerId], references: [id], onDelete: SetNull)
+  viewerCompany    String?
+  viewedAt         DateTime         @default(now())
+
+  @@index([shareLinkId, viewedAt])
 }

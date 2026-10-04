@@ -55,3 +55,16 @@ export function settingsFromLink(link: ShareSettings): ShareSettings {
     includeBreak: link.includeBreak,
   };
 }
+
+/** Discovery never shows a name, so the name setting is always off. */
+export function discoveryToShareSettings(d: Omit<ShareSettings, "showName">): ShareSettings {
+  return {
+    showName: false,
+    includeHeadline: d.includeHeadline,
+    includeSkills: d.includeSkills,
+    includeAssessments: d.includeAssessments,
+    includeSummary: d.includeSummary,
+    includeRoles: d.includeRoles,
+    includeBreak: d.includeBreak,
+  };
+}

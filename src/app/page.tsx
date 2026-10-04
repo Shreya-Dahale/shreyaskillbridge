@@ -16,8 +16,8 @@ import { StatusBar } from "@/components/charts/StatusBar";
 import { Logo } from "@/components/shell/Logo";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { STATUS_LABEL, STATUS_STYLE } from "@/lib/skills/describe";
 import type { SkillStatus } from "@/lib/skills/gap-engine";
+import { StatusBadge } from "@/components/StatusBadge";
 
 const SAMPLE: { name: string; detail: string; status: SkillStatus }[] = [
   { name: "Java", detail: "4 yrs, self-reported · last used 2023", status: "DEMONSTRATED" },
@@ -103,9 +103,7 @@ export default async function Home() {
                       <p className="text-sm font-medium">{s.name}</p>
                       <p className="text-xs text-muted-foreground">{s.detail}</p>
                     </div>
-                    <span className={`whitespace-nowrap rounded px-2 py-1 text-xs ${STATUS_STYLE[s.status]}`}>
-                      {STATUS_LABEL[s.status]}
-                    </span>
+                    <StatusBadge status={s.status} />
                   </li>
                 ))}
               </ul>

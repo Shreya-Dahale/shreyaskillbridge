@@ -4,6 +4,7 @@ import { requireCandidate } from "@/lib/candidate";
 import { loadGapAnalysis } from "@/lib/skills/load-gaps";
 import { explainGap, STATUS_LABEL, STATUS_STYLE } from "@/lib/skills/describe";
 import type { SkillGap, SkillStatus } from "@/lib/skills/gap-engine";
+import { StatusBadge } from "@/components/StatusBadge";
 
 function summary(items: SkillGap[]) {
   return (Object.keys(STATUS_LABEL) as SkillStatus[])
@@ -41,9 +42,7 @@ function Group({ title, items }: { title: string; items: SkillGap[] }) {
                     <span className="font-normal text-gray-500"> · {gap.minYears}+ yrs asked</span>
                   )}
                 </p>
-                <span className={`whitespace-nowrap rounded px-2 py-1 text-xs ${STATUS_STYLE[gap.status]}`}>
-                  {STATUS_LABEL[gap.status]}
-                </span>
+                <StatusBadge status={gap.status} />
               </div>
               <ul className="space-y-0.5 text-sm text-gray-700">
                 {lines.map((line) => (

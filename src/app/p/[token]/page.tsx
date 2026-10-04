@@ -9,6 +9,7 @@ import { settingsFromLink } from "@/lib/profile/settings";
 import { decideAccess } from "@/lib/share/access";
 import { linkStatus } from "@/lib/share/status";
 import { hashToken, isValidTokenFormat } from "@/lib/share/token";
+import { Logo } from "@/components/shell/Logo";
 
 export const metadata: Metadata = {
   title: "Shared evidence profile",
@@ -96,15 +97,20 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
   const shared = buildSharedProfile(source, settingsFromLink(link));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white px-6 py-3 text-sm font-semibold">ReLaunch · Shared evidence profile</header>
-      <main className="mx-auto max-w-3xl space-y-6 p-6">
-        <p className="text-sm text-gray-600">
+    <div className="min-h-screen bg-muted/40">
+      <header className="border-b bg-background">
+        <div className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4 md:px-6">
+          <Logo />
+          <span className="text-xs text-muted-foreground">Shared evidence profile</span>
+        </div>
+      </header>
+      <main className="mx-auto max-w-3xl space-y-6 p-4 md:p-6">
+        <p className="text-sm text-muted-foreground">
           This profile was shared with you by the candidate, who chose exactly what it includes. It shows evidence
           of what they can do, alongside their experience. It is not a score or a hiring decision.
         </p>
         <ProfileView profile={shared} />
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Contacting candidates through ReLaunch invitations is coming soon.
         </p>
       </main>

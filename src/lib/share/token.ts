@@ -9,3 +9,8 @@ export function generateToken(): string {
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
+
+/** Cheap check before hashing: our tokens are always 43 URL-safe characters. */
+export function isValidTokenFormat(token: string): boolean {
+  return /^[A-Za-z0-9_-]{43}$/.test(token);
+}

@@ -42,3 +42,16 @@ export function settingsFromSearchParams(params: Params): ShareSettings {
 export function includedLabels(settings: ShareSettings): string[] {
   return SETTING_FIELDS.filter((f) => settings[f.key]).map((f) => f.label);
 }
+
+/** Copies exactly the share settings from a stored link, ignoring everything else on it. */
+export function settingsFromLink(link: ShareSettings): ShareSettings {
+  return {
+    showName: link.showName,
+    includeHeadline: link.includeHeadline,
+    includeSkills: link.includeSkills,
+    includeAssessments: link.includeAssessments,
+    includeSummary: link.includeSummary,
+    includeRoles: link.includeRoles,
+    includeBreak: link.includeBreak,
+  };
+}

@@ -1,20 +1,50 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Sparkles } from "lucide-react";
+import { JobStatusBadge } from "@/components/JobStatusBadge";
+import { Notice } from "@/components/Notice";
+import { PageHeader } from "@/components/PageHeader";
+import { SubmitButton } from "@/components/SubmitButton";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { analyzeJob, deleteJob } from "@/app/actions/jobs";
+import { setJobStatus } from "@/app/actions/requirements";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
-import { deleteJob, analyzeJob } from "@/app/actions/jobs";
-import { setJobStatus } from "@/app/actions/requirements";
-
-const statusLabel = {
-  DRAFT: "Draft",
-  PUBLISHED: "Published",
-  CLOSED: "Closed",
-} as const;
 
 const errors: Record<string, string> = {
   ai: "The AI analysis failed. Please try again in a moment.",
   norequired: "Add at least one required skill before publishing.",
 };
+
+function SkillChips({
+  title,
+  items,
+  variant,
+}: {
+  title: string;
+  items: { id: string; minYears: number | null; skill: { name: string } }[];
+  variant: "secondary" | "outline";
+}) {
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-medium">{title}</p>
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">None yet.</p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {items.map((s) => (
+            <Badge key={s.id} variant={variant}>
+              {s.skill.name}
+              {s.minYears != null && ` · ${s.minYears}+ yrs`}
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default async function JobDetailPage({
   params,
@@ -41,120 +71,89 @@ export default async function JobDetailPage({
   const required = job.skills.filter((s) => s.importance === "REQUIRED");
   const preferred = job.skills.filter((s) => s.importance === "PREFERRED");
   const hasSkills = job.skills.length > 0;
-  const button = "whitespace-nowrap rounded border px-3 py-1";
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Link href="/employer/jobs" className="text-sm underline">
-        &larr; All jobs
-      </Link>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title={job.title}
+        description={`Created ${job.createdAt.toLocaleDateString("en-GB")}`}
+        back={{ href: "/employer/jobs", label: "All jobs" }}
+      >
+        <JobStatusBadge status={job.status} />
+      </PageHeader>
 
-      <div>
-        <h1 className="text-2xl font-semibold">{job.title}</h1>
-        <p className="text-sm text-gray-500">
-          {statusLabel[job.status]} · created {job.createdAt.toLocaleDateString("en-GB")}
-        </p>
-      </div>
+      {saved && <Notice tone="success">Requirements saved.</Notice>}
+      {error && <Notice tone="error">{errors[error] ?? "Something went wrong."}</Notice>}
 
-      {saved && (
-        <p className="rounded border border-green-300 p-3 text-sm text-green-800">
-          Requirements saved.
-        </p>
-      )}
-      {error && (
-        <p className="rounded border border-red-300 p-3 text-sm text-red-700">
-          {errors[error] ?? "Something went wrong."}
-        </p>
-      )}
-
-      <section className="space-y-3 rounded border p-3">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-medium">Requirements</h2>
-          {hasSkills && (
-            <Link href={`/employer/jobs/${job.id}/review`} className={`${button} text-sm underline`}>
-              Edit requirements
-            </Link>
-          )}
-        </div>
-
-        {hasSkills ? (
-          <div className="space-y-3 text-sm">
-            <div>
-              <p className="font-medium">Required</p>
-              {required.length === 0 ? (
-                <p className="text-gray-500">None yet. Add at least one to publish.</p>
-              ) : (
-                <ul className="mt-1 list-inside list-disc">
-                  {required.map((s) => (
-                    <li key={s.id}>
-                      {s.skill.name}
-                      {s.minYears != null && ` (${s.minYears}+ yrs)`}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div>
-              <p className="font-medium">Preferred</p>
-              {preferred.length === 0 ? (
-                <p className="text-gray-500">None.</p>
-              ) : (
-                <ul className="mt-1 list-inside list-disc">
-                  {preferred.map((s) => (
-                    <li key={s.id}>
-                      {s.skill.name}
-                      {s.minYears != null && ` (${s.minYears}+ yrs)`}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-base">Requirements</CardTitle>
+            {hasSkills && (
+              <Link href={`/employer/jobs/${job.id}/review`} className={buttonVariants({ variant: "outline", size: "sm" })}>
+                Edit requirements
+              </Link>
+            )}
           </div>
-        ) : (
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-gray-600">
+          <CardDescription>
+            {hasSkills
+              ? "What candidates are compared against."
+              : "The AI suggests requirements from your description. You review them before they count."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {hasSkills ? (
+            <>
+              <SkillChips title="Required" items={required} variant="secondary" />
+              {required.length === 0 && (
+                <p className="text-xs text-muted-foreground">Add at least one required skill to publish.</p>
+              )}
+              <SkillChips title="Preferred" items={preferred} variant="outline" />
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
                 {job.extractedAt
                   ? `AI analysis done on ${job.extractedAt.toLocaleString("en-GB")}. Review it to confirm the requirements.`
                   : "Not analyzed yet."}
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {job.extractedAt && (
-                  <Link
-                    href={`/employer/jobs/${job.id}/review`}
-                    className="whitespace-nowrap rounded bg-black px-3 py-1 text-white"
-                  >
+                  <Link href={`/employer/jobs/${job.id}/review`} className={buttonVariants()}>
                     Review requirements
                   </Link>
                 )}
                 <form action={analyzeJob}>
                   <input type="hidden" name="id" value={job.id} />
-                  <button className={button}>
-                    {job.extractedAt ? "Re-run analysis" : "Analyze with AI"}
-                  </button>
+                  <SubmitButton variant={job.extractedAt ? "outline" : "default"} pendingText="Analyzing...">
+                    <Sparkles /> {job.extractedAt ? "Re-run analysis" : "Analyze with AI"}
+                  </SubmitButton>
                 </form>
               </div>
-            </div>
-            {job.extractionJson != null && (
-              <details>
-                <summary className="cursor-pointer">View AI result (raw)</summary>
-                <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded border p-3 text-xs">
-                  {JSON.stringify(job.extractionJson, null, 2)}
-                </pre>
-              </details>
-            )}
-          </div>
-        )}
-      </section>
+              {job.extractionJson != null && (
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-muted-foreground">View AI result (raw)</summary>
+                  <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap rounded-lg border bg-muted/40 p-3 text-xs">
+                    {JSON.stringify(job.extractionJson, null, 2)}
+                  </pre>
+                </details>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-      <section className="space-y-2 rounded border p-3 text-sm">
-        <h2 className="text-lg font-medium">Status</h2>
-        <div className="flex flex-wrap gap-2">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Status</CardTitle>
+          <CardDescription>Candidates see published jobs only. A job needs at least one required skill to be published.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
           {job.status === "DRAFT" && (
             <form action={setJobStatus}>
               <input type="hidden" name="id" value={job.id} />
               <input type="hidden" name="status" value="PUBLISHED" />
-              <button className="rounded bg-black px-3 py-1 text-white">Publish</button>
+              <Button type="submit">Publish</Button>
             </form>
           )}
           {job.status === "PUBLISHED" && (
@@ -162,12 +161,16 @@ export default async function JobDetailPage({
               <form action={setJobStatus}>
                 <input type="hidden" name="id" value={job.id} />
                 <input type="hidden" name="status" value="DRAFT" />
-                <button className={button}>Move back to draft</button>
+                <Button type="submit" variant="outline">
+                  Move back to draft
+                </Button>
               </form>
               <form action={setJobStatus}>
                 <input type="hidden" name="id" value={job.id} />
                 <input type="hidden" name="status" value="CLOSED" />
-                <button className={button}>Close job</button>
+                <Button type="submit" variant="outline">
+                  Close job
+                </Button>
               </form>
             </>
           )}
@@ -175,30 +178,39 @@ export default async function JobDetailPage({
             <form action={setJobStatus}>
               <input type="hidden" name="id" value={job.id} />
               <input type="hidden" name="status" value="DRAFT" />
-              <button className={button}>Reopen as draft</button>
+              <Button type="submit" variant="outline">
+                Reopen as draft
+              </Button>
             </form>
           )}
-        </div>
-        <p className="text-gray-500">
-          Candidates will be able to find published jobs once the skill-gap feature is built.
-        </p>
-      </section>
+        </CardContent>
+      </Card>
 
-      <section className="space-y-2">
-        <h2 className="text-lg font-medium">Job description</h2>
-        <pre className="whitespace-pre-wrap rounded border p-3 font-sans text-sm">
-          {job.description}
-        </pre>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Job description</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-muted-foreground">
+            {job.description}
+          </pre>
+        </CardContent>
+      </Card>
 
-      <details className="rounded border p-3 text-sm">
-        <summary className="cursor-pointer text-red-700">Delete this job</summary>
-        <form action={deleteJob} className="mt-3 space-y-2">
-          <input type="hidden" name="id" value={job.id} />
-          <p>This permanently deletes the job and its requirements.</p>
-          <button className="rounded bg-red-600 px-3 py-1 text-white">Yes, delete this job</button>
-        </form>
-      </details>
+      <Card>
+        <CardContent>
+          <details className="text-sm">
+            <summary className="cursor-pointer font-medium text-destructive">Delete this job</summary>
+            <form action={deleteJob} className="mt-3 space-y-3">
+              <input type="hidden" name="id" value={job.id} />
+              <p className="text-muted-foreground">This permanently deletes the job and its requirements.</p>
+              <Button type="submit" variant="destructive">
+                Yes, delete this job
+              </Button>
+            </form>
+          </details>
+        </CardContent>
+      </Card>
     </div>
   );
 }

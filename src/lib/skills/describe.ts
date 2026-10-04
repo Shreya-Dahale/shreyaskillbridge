@@ -54,3 +54,33 @@ export function explainGap(gap: SkillGap): { lines: string[]; hint: string | nul
 
   return { lines, hint };
 }
+
+/** The "experience on record" cell: what her profile says, in a few words. */
+export function historyText(gap: SkillGap): string {
+  const years = gap.candidateYears != null ? `${gap.candidateYears} yrs` : null;
+  const last = gap.lastUsedYear != null ? `last used ${gap.lastUsedYear}` : null;
+  const detail = [years, last].filter(Boolean).join(" · ");
+
+  switch (gap.match.kind) {
+    case "DIRECT":
+      return detail || "On your profile";
+    case "IMPLIED":
+      return `Through ${gap.match.via}${detail ? ` (${detail})` : ""}`;
+    case "RELATED":
+      return `Adjacent: ${gap.match.via}${detail ? ` (${detail})` : ""}`;
+    case "NONE":
+      return "Nothing on record";
+  }
+}
+
+/** The "recent evidence" cell: what practice tasks show, in a few words. */
+export function evidenceText(status: SkillStatus): string {
+  switch (status) {
+    case "DEMONSTRATED":
+      return "Passed a recent practice task";
+    case "DEVELOPING":
+      return "Practice task started";
+    default:
+      return "No recent evidence";
+  }
+}

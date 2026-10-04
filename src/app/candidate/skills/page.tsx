@@ -1,6 +1,14 @@
-import { prisma } from "@/lib/db";
-import { requireCandidate } from "@/lib/candidate";
+import Link from "next/link";
+import { Sparkles, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { Notice } from "@/components/Notice";
+import { PageHeader } from "@/components/PageHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { deleteCandidateSkill } from "@/app/actions/candidate";
+import { requireCandidate } from "@/lib/candidate";
+import { prisma } from "@/lib/db";
 
 const sourceLabel = {
   EXTRACTED: "From your resume",
@@ -22,36 +30,60 @@ export default async function SkillsPage({
   });
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-semibold">Your skills</h1>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Skills"
+        description="The skills on your profile, with how long you have used them and where each came from."
+      >
+        <Link href="/candidate/resume" className={buttonVariants({ variant: "outline" })}>
+          Import from a resume
+        </Link>
+      </PageHeader>
+
       {imported && (
-        <p className="rounded border border-green-300 p-3 text-sm text-green-800">
-          Saved to your profile. Your roles and career break are on the profile page.
-        </p>
+        <Notice tone="success">Saved to your profile. Your roles and any career break are on the Profile page.</Notice>
       )}
-      {skills.length === 0 && (
-        <p className="text-sm text-gray-500">No skills yet. Upload a resume and import its skills.</p>
+
+      {skills.length === 0 ? (
+        <EmptyState icon={Sparkles} title="No skills yet">
+          Upload a resume and import its skills, and they will appear here.
+        </EmptyState>
+      ) : (
+        <ul className="space-y-2">
+          {skills.map((cs) => (
+            <li key={cs.id}>
+              <Card>
+                <CardContent className="flex items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{cs.skill.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {cs.yearsExperience != null ? `${cs.yearsExperience} yrs` : "Years not set"} ·{" "}
+                      {cs.lastUsedYear != null ? `last used ${cs.lastUsedYear}` : "last used not set"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={cs.source === "EXTRACTED" ? "secondary" : "outline"}>
+                      {sourceLabel[cs.source]}
+                    </Badge>
+                    <form action={deleteCandidateSkill}>
+                      <input type="hidden" name="id" value={cs.id} />
+                      <Button
+                        type="submit"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Delete ${cs.skill.name}`}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 />
+                      </Button>
+                    </form>
+                  </div>
+                </CardContent>
+              </Card>
+            </li>
+          ))}
+        </ul>
       )}
-      <ul className="space-y-2">
-        {skills.map((cs) => (
-          <li key={cs.id} className="flex items-center justify-between rounded border p-3">
-            <div>
-              <p className="font-medium">{cs.skill.name}</p>
-              <p className="text-sm text-gray-500">
-                {cs.yearsExperience != null ? `${cs.yearsExperience} yrs` : "Years not set"}
-                {" · "}
-                {cs.lastUsedYear != null ? `last used ${cs.lastUsedYear}` : "last used not set"}
-                {" · "}
-                {sourceLabel[cs.source]}
-              </p>
-            </div>
-            <form action={deleteCandidateSkill}>
-              <input type="hidden" name="id" value={cs.id} />
-              <button className="text-sm text-red-600 underline">Delete</button>
-            </form>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

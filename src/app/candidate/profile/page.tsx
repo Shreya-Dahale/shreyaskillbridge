@@ -1,25 +1,41 @@
-import { prisma } from "@/lib/db";
-import { requireCandidate } from "@/lib/candidate";
+import { CalendarRange, Plus, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
+import { Notice } from "@/components/Notice";
+import { PageHeader } from "@/components/PageHeader";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  updateHeadline,
-  addCareerHistory,
-  deleteCareerHistory,
   addCareerBreak,
+  addCareerHistory,
   deleteCareerBreak,
+  deleteCareerHistory,
+  updateHeadline,
 } from "@/app/actions/candidate";
+import { requireCandidate } from "@/lib/candidate";
+import { prisma } from "@/lib/db";
+import { formatMonthYear } from "@/lib/profile/format";
 
 const errors: Record<string, string> = {
   dates: "Please check the dates. The end date can't be before the start date.",
   invalid: "Please fill in the required fields.",
 };
 
-function fmt(d: Date | null, empty: string) {
-  if (!d) return empty;
-  return d.toLocaleDateString("en-GB", {
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+function DateFields({ prefix, endLabel }: { prefix: string; endLabel: string }) {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="space-y-2">
+        <Label htmlFor={`${prefix}-start`}>Start date</Label>
+        <Input id={`${prefix}-start`} name="startDate" type="date" required />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor={`${prefix}-end`}>{endLabel}</Label>
+        <Input id={`${prefix}-end`} name="endDate" type="date" />
+      </div>
+    </div>
+  );
 }
 
 export default async function ProfilePage({
@@ -37,115 +53,132 @@ export default async function ProfilePage({
     },
   });
 
-  const input = "w-full rounded border p-2";
-  const button = "rounded bg-black px-4 py-2 text-white";
-
   return (
-    <div className="mx-auto max-w-2xl space-y-10">
-      <h1 className="text-2xl font-semibold">Your profile</h1>
-      {error && (
-        <p className="rounded border border-red-300 p-3 text-sm text-red-700">
-          {errors[error] ?? "Something went wrong."}
-        </p>
-      )}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Profile"
+        description="Your headline, roles and any career break. This is the history your skills are compared from."
+      />
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Headline</h2>
-        <form action={updateHeadline} className="flex gap-2">
-          <input
-            name="headline"
-            defaultValue={profile.headline ?? ""}
-            placeholder="e.g. Java developer returning after a career break"
-            maxLength={140}
-            className={input}
-          />
-          <button className={button}>Save</button>
-        </form>
-      </section>
+      {error && <Notice tone="error">{errors[error] ?? "Something went wrong."}</Notice>}
 
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Career history</h2>
-        {profile.careerHistory.length === 0 && (
-          <p className="text-sm text-gray-500">No roles added yet.</p>
-        )}
-        <ul className="space-y-3">
-          {profile.careerHistory.map((job) => (
-            <li key={job.id} className="flex items-start justify-between rounded border p-3">
-              <div>
-                <p className="font-medium">
-                  {job.jobTitle} · {job.company}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {fmt(job.startDate, "")} – {fmt(job.endDate, "Present")}
-                </p>
-                {job.description && <p className="mt-1 text-sm">{job.description}</p>}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Headline</CardTitle>
+          <CardDescription>One line shown at the top of your evidence profile.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action={updateHeadline} className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              name="headline"
+              aria-label="Headline"
+              defaultValue={profile.headline ?? ""}
+              placeholder="e.g. Java developer returning after a career break"
+              maxLength={140}
+            />
+            <Button type="submit">Save</Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Career history</CardTitle>
+          <CardDescription>The roles you have held.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {profile.careerHistory.length === 0 ? (
+            <EmptyState icon={CalendarRange} title="No roles added yet">
+              Add a role below, or import them from your resume.
+            </EmptyState>
+          ) : (
+            <ul className="space-y-2">
+              {profile.careerHistory.map((job) => (
+                <li key={job.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
+                  <div>
+                    <p className="text-sm font-medium">
+                      {job.jobTitle} · {job.company}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatMonthYear(job.startDate)} – {job.endDate ? formatMonthYear(job.endDate) : "Present"}
+                    </p>
+                    {job.description && <p className="mt-1 text-sm text-muted-foreground">{job.description}</p>}
+                  </div>
+                  <form action={deleteCareerHistory}>
+                    <input type="hidden" name="id" value={job.id} />
+                    <Button type="submit" variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      <Trash2 /> Delete
+                    </Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Add a role</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={addCareerHistory} className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="jobTitle">Job title</Label>
+                <Input id="jobTitle" name="jobTitle" maxLength={100} required />
               </div>
-              <form action={deleteCareerHistory}>
-                <input type="hidden" name="id" value={job.id} />
-                <button className="text-sm text-red-600 underline">Delete</button>
-              </form>
-            </li>
-          ))}
-        </ul>
+              <div className="space-y-2">
+                <Label htmlFor="company">Company</Label>
+                <Input id="company" name="company" maxLength={100} required />
+              </div>
+            </div>
+            <DateFields prefix="role" endLabel="End date (blank if current)" />
+            <div className="space-y-2">
+              <Label htmlFor="description">What did you work on? (optional)</Label>
+              <Textarea id="description" name="description" rows={3} maxLength={2000} />
+            </div>
+            <Button type="submit">
+              <Plus /> Add role
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
-        <form action={addCareerHistory} className="space-y-2 rounded border p-3">
-          <p className="text-sm font-medium">Add a role</p>
-          <input name="jobTitle" placeholder="Job title" required className={input} />
-          <input name="company" placeholder="Company" required className={input} />
-          <div className="flex gap-2">
-            <label className="flex-1 text-sm">
-              Start date
-              <input name="startDate" type="date" required className={input} />
-            </label>
-            <label className="flex-1 text-sm">
-              End date (blank if current)
-              <input name="endDate" type="date" className={input} />
-            </label>
-          </div>
-          <textarea
-            name="description"
-            placeholder="What did you work on? (optional)"
-            rows={3}
-            className={input}
-          />
-          <button className={button}>Add role</button>
-        </form>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-medium">Career break</h2>
-        <p className="text-sm text-gray-500">
-          We only ask for dates. You never need to explain the reason.
-        </p>
-        <ul className="space-y-3">
-          {profile.careerBreaks.map((b) => (
-            <li key={b.id} className="flex items-center justify-between rounded border p-3">
-              <p className="text-sm">
-                {fmt(b.startDate, "")} – {fmt(b.endDate, "Ongoing")}
-              </p>
-              <form action={deleteCareerBreak}>
-                <input type="hidden" name="id" value={b.id} />
-                <button className="text-sm text-red-600 underline">Delete</button>
-              </form>
-            </li>
-          ))}
-        </ul>
-
-        <form action={addCareerBreak} className="space-y-2 rounded border p-3">
-          <p className="text-sm font-medium">Add a career break</p>
-          <div className="flex gap-2">
-            <label className="flex-1 text-sm">
-              Start date
-              <input name="startDate" type="date" required className={input} />
-            </label>
-            <label className="flex-1 text-sm">
-              End date (blank if ongoing)
-              <input name="endDate" type="date" className={input} />
-            </label>
-          </div>
-          <button className={button}>Add break</button>
-        </form>
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Career break</CardTitle>
+          <CardDescription>
+            We only ask for dates. You never need to explain the reason, and it is never part of a skill comparison.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profile.careerBreaks.length > 0 && (
+            <ul className="space-y-2">
+              {profile.careerBreaks.map((b) => (
+                <li key={b.id} className="flex items-center justify-between gap-3 rounded-lg border p-3">
+                  <p className="text-sm">
+                    {formatMonthYear(b.startDate)} – {b.endDate ? formatMonthYear(b.endDate) : "Ongoing"}
+                  </p>
+                  <form action={deleteCareerBreak}>
+                    <input type="hidden" name="id" value={b.id} />
+                    <Button type="submit" variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                      <Trash2 /> Delete
+                    </Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+          <form action={addCareerBreak} className="space-y-4 rounded-lg border p-4">
+            <p className="text-sm font-medium">Add a career break</p>
+            <DateFields prefix="break" endLabel="End date (blank if ongoing)" />
+            <Button type="submit" variant="outline">
+              <Plus /> Add break
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

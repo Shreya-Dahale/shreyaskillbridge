@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { explainGap } from "./describe";
+import { evidenceText, explainGap, historyText } from "./describe";
 import type { SkillGap } from "./gap-engine";
 
 function gap(overrides: Partial<SkillGap>): SkillGap {
@@ -63,5 +63,40 @@ describe("explainGap", () => {
       gap({ status: "DEVELOPING", match: { kind: "NONE", via: null } })
     );
     expect(lines).toEqual(["You have started working on this skill."]);
+  });
+});
+
+describe("historyText", () => {
+  it("shows years and last used for a direct match", () => {
+    expect(historyText(gap({ candidateYears: 4, lastUsedYear: 2023 }))).toBe("4 yrs · last used 2023");
+  });
+
+  it("falls back when nothing more is known", () => {
+    expect(historyText(gap({}))).toBe("On your profile");
+  });
+
+  it("names the skill an implied match came through", () => {
+    expect(historyText(gap({ match: { kind: "IMPLIED", via: "MySQL" }, candidateYears: 2 }))).toBe(
+      "Through MySQL (2 yrs)"
+    );
+  });
+
+  it("labels adjacent experience", () => {
+    expect(
+      historyText(gap({ match: { kind: "RELATED", via: "Spring" }, candidateYears: 3, lastUsedYear: 2023 }))
+    ).toBe("Adjacent: Spring (3 yrs · last used 2023)");
+  });
+
+  it("says so when nothing is on record", () => {
+    expect(historyText(gap({ match: { kind: "NONE", via: null } }))).toBe("Nothing on record");
+  });
+});
+
+describe("evidenceText", () => {
+  it("describes each status", () => {
+    expect(evidenceText("DEMONSTRATED")).toBe("Passed a recent practice task");
+    expect(evidenceText("DEVELOPING")).toBe("Practice task started");
+    expect(evidenceText("NEEDS_REFRESH")).toBe("No recent evidence");
+    expect(evidenceText("NOT_YET_DEMONSTRATED")).toBe("No recent evidence");
   });
 });

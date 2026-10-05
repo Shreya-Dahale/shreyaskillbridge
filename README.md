@@ -1,4 +1,4 @@
-# ReLaunch
+# SkillBridge
 
 Evidence-based career re-entry platform. Candidates turn past experience into
 current, job-specific evidence. Employers review that evidence alongside the

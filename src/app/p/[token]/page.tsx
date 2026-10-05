@@ -111,7 +111,7 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
         </p>
         <ProfileView profile={shared} />
         <p className="text-xs text-muted-foreground">
-          Contacting candidates through ReLaunch invitations is coming soon.
+          Contacting candidates through SkillBridge invitations is coming soon.
         </p>
       </main>
     </div>

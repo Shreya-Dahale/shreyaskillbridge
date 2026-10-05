@@ -39,7 +39,7 @@ export default async function LoginPage({
       </form>
 
       <p className="text-sm text-muted-foreground">
-        New to ReLaunch?{" "}
+        New to SkillBridge?{" "}
         <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
           Create an account
         </Link>

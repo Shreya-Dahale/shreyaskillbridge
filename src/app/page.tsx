@@ -73,7 +73,7 @@ export default async function Home() {
               <span className="text-primary">Fill the evidence gap.</span>
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              ReLaunch helps professionals returning after a break turn past experience into credible,
+              SkillBridge helps professionals returning after a break turn past experience into credible,
               up-to-date evidence of what they can do today, and share it on their own terms.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -178,7 +178,7 @@ export default async function Home() {
 
       <footer className="border-t">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-xs text-muted-foreground md:flex-row md:justify-between md:px-8">
-          <p>ReLaunch · Past experience tells an employer where you have been. Evidence shows what you can do now.</p>
+          <p>SkillBridge · Past experience tells an employer where you have been. Evidence shows what you can do now.</p>
           <p>Practice tasks are completed independently and are not supervised.</p>
         </div>
       </footer>

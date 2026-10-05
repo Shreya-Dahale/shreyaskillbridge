@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: { default: "ReLaunch", template: "%s · ReLaunch" },
+  title: { default: "SkillBridge", template: "%s · SkillBridge" },
   description: "Turn your past experience into evidence of what you can do today.",
 };
 

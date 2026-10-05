@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { daysLeft, partitionInvitations } from "./inbox";
+import { daysLeft, partitionInvitations, tallyInvitations } from "./inbox";
 
 const now = new Date("2026-10-10T12:00:00Z");
 const d = (s: string) => new Date(s);
@@ -41,5 +41,22 @@ describe("daysLeft", () => {
     expect(daysLeft(d("2026-10-10T18:00:00Z"), now)).toBe(1);
     expect(daysLeft(d("2026-10-10T12:00:00Z"), now)).toBe(0);
     expect(daysLeft(d("2026-10-01T12:00:00Z"), now)).toBe(0);
+  });
+});
+
+describe("tallyInvitations", () => {
+  it("counts each state, treating a lapsed pending invitation as expired", () => {
+    const items = [
+      { status: "PENDING" as const, expiresAt: d("2026-10-20T00:00:00Z") },
+      { status: "PENDING" as const, expiresAt: d("2026-10-01T00:00:00Z") },
+      { status: "ACCEPTED" as const, expiresAt: d("2026-10-01T00:00:00Z") },
+      { status: "ACCEPTED" as const, expiresAt: d("2026-10-30T00:00:00Z") },
+      { status: "DECLINED" as const, expiresAt: d("2026-10-30T00:00:00Z") },
+    ];
+    expect(tallyInvitations(items, now)).toEqual({ waiting: 1, accepted: 2, declined: 1, expired: 1 });
+  });
+
+  it("is all zeros for no invitations", () => {
+    expect(tallyInvitations([], now)).toEqual({ waiting: 0, accepted: 0, declined: 0, expired: 0 });
   });
 });

@@ -11,7 +11,19 @@ export async function loadCandidateDashboard(candidateId: string) {
   const now = new Date();
   const since = new Date(now.getTime() - WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  const [roles, skills, targets, passed, linksCreated, views, submissions, source] = await Promise.all([
+  const [
+    roles,
+    skills,
+    targets,
+    passed,
+    linksCreated,
+    views,
+    submissions,
+    source,
+    invitationsWaiting,
+    discovery,
+    listingViews,
+  ] = await Promise.all([
     prisma.careerHistory.count({ where: { candidateId } }),
     prisma.candidateSkill.count({ where: { candidateId } }),
     prisma.targetJob.count({ where: { candidateId } }),
@@ -28,6 +40,11 @@ export async function loadCandidateDashboard(candidateId: string) {
       take: 2000,
     }),
     loadProfileSource(candidateId),
+    prisma.invitation.count({
+      where: { candidateId, status: "PENDING", expiresAt: { gt: now } },
+    }),
+    prisma.discoverySettings.findUnique({ where: { candidateId }, select: { enabled: true } }),
+    prisma.discoveryView.count({ where: { candidateId, viewedAt: { gte: since } } }),
   ]);
 
   const skillStatuses = source
@@ -57,5 +74,8 @@ export async function loadCandidateDashboard(candidateId: string) {
       now
     ),
     practiceTotal: submissions.length,
+    invitationsWaiting,
+    discoveryEnabled: discovery?.enabled ?? false,
+    listingViews,
   };
 }

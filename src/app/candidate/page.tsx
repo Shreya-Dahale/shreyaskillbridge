@@ -7,6 +7,8 @@ import {
   Circle,
   Eye,
   ListChecks,
+  Mail,
+  Search,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -63,6 +65,47 @@ export default async function CandidateHome() {
           label={`profile views, last ${WINDOW_DAYS} days`}
           href="/candidate/share/activity"
         />
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Link href="/candidate/invitations" className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Card className="h-full transition-shadow group-hover:shadow-md">
+            <CardContent className="flex items-center gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <Mail className="size-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">
+                  {data.invitationsWaiting === 0
+                    ? "No invitations waiting"
+                    : `${data.invitationsWaiting} ${data.invitationsWaiting === 1 ? "invitation" : "invitations"} waiting`}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Employers reach you only by invitation, and you decide whether to reply.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/candidate/discovery" className="group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Card className="h-full transition-shadow group-hover:shadow-md">
+            <CardContent className="flex items-center gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-accent text-accent-foreground">
+                <Search className="size-5" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">
+                  {data.discoveryEnabled ? "Employers can find you" : "Employers can't find you"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {data.discoveryEnabled
+                    ? `Your listing was opened ${data.listingViews} ${data.listingViews === 1 ? "time" : "times"} in the last ${WINDOW_DAYS} days.`
+                    : "Discovery is off. Turn it on if you want employers to find you."}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {!allDone && (

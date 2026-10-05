@@ -1,5 +1,16 @@
 import Link from "next/link";
-import { Archive, ArrowRight, Briefcase, CheckCircle2, Circle, Eye, FileText, type LucideIcon } from "lucide-react";
+import {
+  Archive,
+  ArrowRight,
+  Briefcase,
+  CheckCircle2,
+  Circle,
+  Eye,
+  FileText,
+  Mail,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { HorizontalBars } from "@/components/charts/HorizontalBars";
 import { EmptyState } from "@/components/EmptyState";
 import { JobStatusBadge } from "@/components/JobStatusBadge";
@@ -89,6 +100,41 @@ export default async function EmployerHome() {
           </CardContent>
         </Card>
       )}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Mail className="size-4 text-primary" aria-hidden="true" /> Invitations
+              </CardTitle>
+              <CardDescription>The invitations you have sent, by outcome.</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Link href="/employer/candidates" className={buttonVariants({ size: "sm" })}>
+                <Users /> Find candidates
+              </Link>
+              <Link href="/employer/invitations" className={buttonVariants({ variant: "outline", size: "sm" })}>
+                View all
+              </Link>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <dl className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {[
+              { label: "Waiting for a reply", value: data.invitations.waiting },
+              { label: "Accepted", value: data.invitations.accepted },
+              { label: "Declined", value: data.invitations.declined },
+              { label: "Expired", value: data.invitations.expired },
+            ].map((x) => (
+              <div key={x.label}>
+                <dd className="text-2xl font-semibold leading-none">{x.value}</dd>
+                <dt className="mt-1 text-xs text-muted-foreground">{x.label}</dt>
+              </div>
+            ))}
+          </dl>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

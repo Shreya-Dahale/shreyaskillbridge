@@ -1,13 +1,15 @@
 import { notFound } from "next/navigation";
-import { Notice } from "@/components/Notice";
+import { InvitationPanel } from "@/components/discovery/InvitationPanel";
 import { MatchBreakdown } from "@/components/discovery/MatchBreakdown";
 import { PageHeader } from "@/components/PageHeader";
 import { ProfileView } from "@/components/profile/ProfileView";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/db";
 import { matchHeadline } from "@/lib/discovery/describe";
 import { loadCandidateListing, loadDiscoveryJob } from "@/lib/discovery/load";
 import { logDiscoveryView } from "@/lib/discovery/log-view";
 import { requireEmployer } from "@/lib/employer";
+import { invitationsRemaining } from "@/lib/invitations/rules";
 
 export default async function CandidateListingPage({
   params,
@@ -29,6 +31,15 @@ export default async function CandidateListingPage({
     companyName: employer.companyName,
     jobTitle: job.title,
   });
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const [existing, sentRecently] = await Promise.all([
+    prisma.invitation.findUnique({
+      where: { jobId_candidateId: { jobId: job.id, candidateId: listing.candidateId } },
+      select: { status: true, createdAt: true, expiresAt: true },
+    }),
+    prisma.invitation.count({ where: { employerId: employer.id, createdAt: { gte: since } } }),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -52,9 +63,14 @@ export default async function CandidateListingPage({
         </CardContent>
       </Card>
 
-      <ProfileView profile={listing.profile} />
+      <InvitationPanel
+        jobId={job.id}
+        code={listing.code}
+        existing={existing}
+        remaining={invitationsRemaining(sentRecently)}
+      />
 
-      <Notice>Inviting this candidate to talk is the next step we are building.</Notice>
+      <ProfileView profile={listing.profile} />
     </div>
   );
 }

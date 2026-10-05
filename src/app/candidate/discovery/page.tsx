@@ -35,9 +35,16 @@ export default async function DiscoveryPage({
   const { error, saved } = await searchParams;
   const candidate = await requireCandidate();
 
-  const [row, source] = await Promise.all([
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const [row, source, views] = await Promise.all([
     prisma.discoverySettings.findUnique({ where: { candidateId: candidate.id } }),
     loadProfileSource(candidate.id),
+    prisma.discoveryView.findMany({
+      where: { candidateId: candidate.id, viewedAt: { gte: since } },
+      orderBy: { viewedAt: "desc" },
+      take: 50,
+      select: { id: true, companyName: true, jobTitle: true, viewedAt: true },
+    }),
   ]);
 
   const settings: DiscoveryForm = row
@@ -151,7 +158,32 @@ export default async function DiscoveryPage({
           you on and you will not appear in results. Turn one of them on to be found.
         </Notice>
       )}
-
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Who opened your listing</CardTitle>
+          <CardDescription>Employers who opened your listing from a job search in the last 30 days.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {views.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No one has opened your listing in the last 30 days.</p>
+          ) : (
+            <ul className="space-y-2">
+              {views.map((v) => (
+                <li key={v.id} className="flex items-start justify-between gap-3 rounded-lg border p-3 text-sm">
+                  <div>
+                    <p className="font-medium">{v.companyName}</p>
+                    <p className="text-xs text-muted-foreground">for {v.jobTitle}</p>
+                  </div>
+                  <p className="whitespace-nowrap text-xs text-muted-foreground">
+                    {v.viewedAt.toLocaleString("en-GB")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+      
       {preview && (
         <section className="space-y-2">
           <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

@@ -8,7 +8,7 @@ import { Logo } from "./Logo";
 import { NavLinks } from "./NavLinks";
 import type { NavItem } from "./nav-types";
 
-export function MobileNav({ items }: { items: NavItem[] }) {
+export function MobileNav({ items, badges }: { items: NavItem[]; badges?: Record<string, number> }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export function MobileNav({ items }: { items: NavItem[] }) {
                 </Button>
               </div>
               <nav className="overflow-y-auto p-4">
-                <NavLinks items={items} onNavigate={() => setOpen(false)} />
+                <NavLinks items={items} badges={badges} onNavigate={() => setOpen(false)} />
               </nav>
             </div>
           </div>,

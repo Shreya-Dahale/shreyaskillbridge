@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { getOrCreateSkill } from "../src/lib/skills/resolve";
 import { syncTaxonomy } from "../src/lib/skills/sync-taxonomy";
 import { syncTasks } from "../src/lib/tasks/sync-tasks";
+import { seedDemoCandidates } from "./seed-demo";
 
 const prisma = new PrismaClient();
 
@@ -167,6 +168,7 @@ async function main() {
   await syncTaxonomy(prisma);
   await syncTasks(prisma);
   await seedCandidate(passwordHash);
+  await seedDemoCandidates(prisma, passwordHash);
   await seedEmployer(passwordHash);
 }
 

@@ -24,31 +24,38 @@ model User {
 }
 
 model CandidateProfile {
-  id            String           @id @default(cuid())
-  userId        String           @unique
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  headline      String?
-  createdAt     DateTime         @default(now())
-  careerHistory CareerHistory[]
-  careerBreaks  CareerBreak[]
-  skills        CandidateSkill[]
-  resumes       Resume[]
-  targets       TargetJob[]
-  submissions   Submission[]
-  evidence      Evidence[]
-  shareLinks    ShareLink[]
+  id             String             @id @default(cuid())
+  userId         String             @unique
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline       String?
+  createdAt      DateTime           @default(now())
+  careerHistory  CareerHistory[]
+  careerBreaks   CareerBreak[]
+  skills         CandidateSkill[]
+  resumes        Resume[]
+  targets        TargetJob[]
+  submissions    Submission[]
+  evidence       Evidence[]
+  shareLinks     ShareLink[]
+  discovery      DiscoverySettings?
+  invitations    Invitation[]
+  blocks         CompanyBlock[]
+  discoveryViews DiscoveryView[]
 }
 
 model EmployerProfile {
-  id          String      @id @default(cuid())
-  userId      String      @unique
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName String
-  website     String?
-  about       String?
-  createdAt   DateTime    @default(now())
-  jobs        Job[]
-  shareViews  ShareView[]
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String
+  website        String?
+  about          String?
+  createdAt      DateTime        @default(now())
+  jobs           Job[]
+  shareViews     ShareView[]
+  invitations    Invitation[]
+  blocks         CompanyBlock[]
+  discoveryViews DiscoveryView[]
 }
 
 enum SkillSource {
@@ -149,6 +156,7 @@ model Job {
   updatedAt      DateTime        @updatedAt
   skills         JobSkill[]
   targets        TargetJob[]
+  invitations    Invitation[]
 
   @@index([employerId])
 }
@@ -332,4 +340,74 @@ model ShareView {
   viewedAt         DateTime         @default(now())
 
   @@index([shareLinkId, viewedAt])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model DiscoverySettings {
+  id                 String           @id @default(cuid())
+  candidateId        String           @unique
+  candidate          CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  enabled            Boolean          @default(false)
+  code               String           @unique
+  includeHeadline    Boolean          @default(true)
+  includeSkills      Boolean          @default(true)
+  includeAssessments Boolean          @default(true)
+  includeSummary     Boolean          @default(true)
+  includeRoles       Boolean          @default(false)
+  includeBreak       Boolean          @default(false)
+  updatedAt          DateTime         @updatedAt
+}
+
+model Invitation {
+  id              String           @id @default(cuid())
+  employerId      String
+  employer        EmployerProfile  @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  jobId           String?
+  job             Job?             @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  candidateId     String
+  candidate       CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  companyName     String
+  jobTitle        String
+  message         String
+  status          InvitationStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+  expiresAt       DateTime
+  respondedAt     DateTime?
+  contactName     String?
+  contactEmail    String?
+  candidateReadAt DateTime?
+  employerReadAt  DateTime?
+
+  @@unique([jobId, candidateId])
+  @@index([candidateId, status])
+  @@index([employerId, createdAt])
+}
+
+model CompanyBlock {
+  id          String           @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  employerId  String
+  employer    EmployerProfile  @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+
+  @@unique([candidateId, employerId])
+}
+
+model DiscoveryView {
+  id          String           @id @default(cuid())
+  candidateId String
+  candidate   CandidateProfile @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  employerId  String?
+  employer    EmployerProfile? @relation(fields: [employerId], references: [id], onDelete: SetNull)
+  companyName String
+  jobTitle    String
+  viewedAt    DateTime         @default(now())
+
+  @@index([candidateId, viewedAt])
 }

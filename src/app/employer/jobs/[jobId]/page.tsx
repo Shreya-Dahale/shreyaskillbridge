@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { JobStatusBadge } from "@/components/JobStatusBadge";
 import { Notice } from "@/components/Notice";
 import { PageHeader } from "@/components/PageHeader";
@@ -79,7 +79,14 @@ export default async function JobDetailPage({
         description={`Created ${job.createdAt.toLocaleDateString("en-GB")}`}
         back={{ href: "/employer/jobs", label: "All jobs" }}
       >
-        <JobStatusBadge status={job.status} />
+        <div className="flex items-center gap-2">
+          {job.status === "PUBLISHED" && (
+            <Link href={`/employer/jobs/${job.id}/candidates`} className={buttonVariants()}>
+              <Search /> Find candidates
+            </Link>
+          )}
+          <JobStatusBadge status={job.status} />
+        </div>
       </PageHeader>
 
       {saved && <Notice tone="success">Requirements saved.</Notice>}

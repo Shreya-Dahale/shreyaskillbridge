@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DEFAULT_SETTINGS, settingsFromSearchParams } from "./settings";
+import { DEFAULT_SETTINGS, discoveryToShareSettings, settingsFromSearchParams } from "./settings";
 
 describe("settingsFromSearchParams", () => {
   it("uses the approved defaults when no preview is requested", () => {
@@ -37,5 +37,35 @@ describe("settingsFromSearchParams", () => {
   it("can switch everything off", () => {
     const s = settingsFromSearchParams({ preview: "1" });
     expect(Object.values(s).every((v) => v === false)).toBe(true);
+  });
+});
+
+describe("discoveryToShareSettings", () => {
+  it("copies the section flags and never shows the name", () => {
+    const s = discoveryToShareSettings({
+      includeHeadline: true,
+      includeSkills: false,
+      includeAssessments: true,
+      includeSummary: false,
+      includeRoles: true,
+      includeBreak: false,
+    });
+    expect(s).toEqual({
+      showName: false,
+      includeHeadline: true,
+      includeSkills: false,
+      includeAssessments: true,
+      includeSummary: false,
+      includeRoles: true,
+      includeBreak: false,
+    });
+  });
+
+  it("ignores a name setting even if one is passed", () => {
+    const s = discoveryToShareSettings({
+      ...DEFAULT_SETTINGS,
+      showName: true,
+    } as Parameters<typeof discoveryToShareSettings>[0]);
+    expect(s.showName).toBe(false);
   });
 });

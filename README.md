@@ -63,6 +63,21 @@ code through Piston to prove the tasks are fair; needs Piston running)
   part of it.
 - Every refusal on a share link (unknown, expired, revoked or not permitted)
   shows the same neutral page.
+  - Discovery is opt-in and off by default. A candidate appears only as a short code,
+  never with a name or email, and a search can match only on the sections she
+  exposes. Her career break is never a filter, a sort, or part of a comparison.
+- Employers search only from one of their own published jobs. A listing opens only
+  if the candidate is discoverable, has not blocked that company, and is relevant
+  to the job, and every other case returns the same 404.
+- Matching groups candidates by recent evidence and shows a tick-and-warning
+  breakdown. There is no score or rank, and the order inside a group is a stable
+  shuffle based on the candidate's public code and the job.
+- Contact details are copied onto an invitation only when the candidate accepts,
+  in one atomic update, and are visible only to the employer who invited her.
+  Declined, expired and blocked outcomes reveal nothing.
+- Invitation messages are plain text of 20 to 500 characters with no links or
+  email addresses, with a limit of 10 invitations per employer per 24 hours and
+  one invitation per candidate and job.
 
 ## Status
 
@@ -73,4 +88,6 @@ code through Piston to prove the tasks are fair; needs Piston running)
 - Phase 4: assessment engine with Java, REST and SQL practice tasks (done); project review deferred
 - Phase 5: evidence profile, share links, employer view and access log (done)
 - Design A and B: design system, app shell, dashboards with charts, restyled screens (done)
-- Phase 6: employer candidate discovery and invitations (next)
+- Phase 6: discoverability, evidence-based candidate search, invitations with consent (done)
+- Phase 7: hardening, privacy audit and deployment readiness (next)
+- Phase 8: evaluation

@@ -9,11 +9,13 @@ import type { NavItem } from "./nav-types";
 export function AppShell({
   section,
   items,
+  badges,
   userName,
   children,
 }: {
   section: string;
   items: NavItem[];
+  badges?: Record<string, number>;
   userName?: string | null;
   children: React.ReactNode;
 }) {
@@ -29,13 +31,13 @@ export function AppShell({
           {section}
         </p>
         <nav className="flex-1 overflow-y-auto px-4 pb-4">
-          <NavLinks items={items} />
+          <NavLinks items={items} badges={badges} />
         </nav>
       </aside>
 
       <div className="md:pl-64">
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur md:px-8">
-          <MobileNav items={items} />
+          <MobileNav items={items} badges={badges} />
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <span

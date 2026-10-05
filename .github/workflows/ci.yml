@@ -8,7 +8,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgresql://relaunch:relaunch@localhost:5433/relaunch
+      DATABASE_URL: postgresql://skillbridge:skillbridge@localhost:5433/skillbridge
       AUTH_SECRET: ci-secret
     steps:
       - uses: actions/checkout@v4

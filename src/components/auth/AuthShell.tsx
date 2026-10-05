@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { CheckCircle2, Rocket } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { Logo } from "@/components/shell/Logo";
+import { BridgeMark } from "@/components/shell/BridgeMark";
 
 const POINTS = [
   "Your career break never enters the skill comparison",
@@ -22,9 +23,9 @@ export function AuthShell({
       <aside className="hidden flex-col justify-between bg-primary p-12 text-primary-foreground lg:flex">
         <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
           <span className="flex size-8 items-center justify-center rounded-lg bg-primary-foreground/15">
-            <Rocket className="size-4" />
+            <BridgeMark className="size-5" />
           </span>
-          ReLaunch
+          SkillBridge
         </Link>
 
         <div className="space-y-6">

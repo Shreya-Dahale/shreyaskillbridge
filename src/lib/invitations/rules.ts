@@ -44,7 +44,7 @@ export function validateInvitationMessage(raw: string): MessageCheck {
   if (looksLikeLink(message)) {
     return {
       ok: false,
-      reason: "Please remove links and web addresses. Candidates reply to you through ReLaunch.",
+      reason: "Please remove links and web addresses. Candidates reply to you through SkillBridge.",
     };
   }
   if (EMAIL.test(message)) {

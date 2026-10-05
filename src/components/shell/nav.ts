@@ -16,4 +16,5 @@ export const EMPLOYER_NAV: NavItem[] = [
   { href: "/employer", label: "Dashboard", icon: "LayoutDashboard", exact: true },
   { href: "/employer/company", label: "Company", icon: "Building2" },
   { href: "/employer/jobs", label: "Jobs", icon: "Briefcase" },
+  { href: "/employer/candidates", label: "Find candidates", icon: "Users" },
 ];

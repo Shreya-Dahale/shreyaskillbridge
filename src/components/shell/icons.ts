@@ -9,6 +9,7 @@ import {
   Share2,
   Sparkles,
   User,
+  Users,
 } from "lucide-react";
 
 export const ICONS = {
@@ -22,4 +23,5 @@ export const ICONS = {
   Share2,
   Sparkles,
   User,
+  Users,
 } as const;

@@ -164,6 +164,7 @@ async function seedEmployer(passwordHash: string) {
 }
 
 async function main() {
+  console.log("Seeding database host:", new URL(process.env.DATABASE_URL ?? "postgresql://unknown").host);
   const passwordHash = await bcrypt.hash("password123", 12);
   await syncTaxonomy(prisma);
   await syncTasks(prisma);

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { requireCandidate } from "@/lib/candidate";
 import { gradeSubmission } from "@/lib/grading/grade";
+import { DEMO_MODE } from "@/lib/demo";
 
 const MAX_CODE_CHARS = 20_000;
 const MAX_SUBMISSIONS_PER_HOUR = 30;
@@ -14,6 +15,7 @@ export async function submitCode(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   const code = String(formData.get("code") ?? "");
   const back = `/candidate/tasks/${encodeURIComponent(slug)}`;
+  if (DEMO_MODE) redirect(`${back}?error=demo`);
 
   const task = await prisma.task.findFirst({
     where: { slug, active: true, kind: { in: ["JAVA_CODE", "SQL"] } },
@@ -49,6 +51,7 @@ export async function submitCode(formData: FormData) {
 }
 
 export async function regradeSubmission(formData: FormData) {
+  if (DEMO_MODE) redirect("/candidate/tasks");
   const profile = await requireCandidate();
   const id = String(formData.get("id") ?? "");
 

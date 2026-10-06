@@ -12,10 +12,12 @@ import { analyzeJob, deleteJob } from "@/app/actions/jobs";
 import { setJobStatus } from "@/app/actions/requirements";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
+import {DEMO_MODE, DEMO_NOTE} from "@/lib/demo";
 
 const errors: Record<string, string> = {
   ai: "The AI analysis failed. Please try again in a moment.",
   norequired: "Add at least one required skill before publishing.",
+  demo: DEMO_NOTE,
 };
 
 function SkillChips({
@@ -122,20 +124,22 @@ export default async function JobDetailPage({
               <p className="text-sm text-muted-foreground">
                 {job.extractedAt
                   ? `AI analysis done on ${job.extractedAt.toLocaleString("en-GB")}. Review it to confirm the requirements.`
-                  : "Not analyzed yet."}
+                  : DEMO_MODE ? "AI analysis is off in the hosted demo. Add the requirements yourself." :"Not analyzed yet."}
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                {job.extractedAt && (
+                {(job.extractedAt || DEMO_MODE) && (
                   <Link href={`/employer/jobs/${job.id}/review`} className={buttonVariants()}>
                     Review requirements
                   </Link>
                 )}
-                <form action={analyzeJob}>
-                  <input type="hidden" name="id" value={job.id} />
-                  <SubmitButton variant={job.extractedAt ? "outline" : "default"} pendingText="Analyzing...">
-                    <Sparkles /> {job.extractedAt ? "Re-run analysis" : "Analyze with AI"}
-                  </SubmitButton>
-                </form>
+                {!DEMO_MODE && (
+                  <form action={analyzeJob}>
+                    <input type="hidden" name="id" value={job.id} />
+                    <SubmitButton variant={job.extractedAt ? "outline" : "default"} pendingText="Analyzing...">
+                      <Sparkles /> {job.extractedAt ? "Re-run analysis" : "Analyze with AI"}
+                    </SubmitButton>
+                  </form>
+                )}
               </div>
               {job.extractionJson != null && (
                 <details className="text-sm">

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
 import { extractJobData } from "@/lib/ai/gemini";
+import { DEMO_MODE } from "@/lib/demo";
 
 const jobSchema = z.object({
   title: z.string().trim().min(1).max(100),
@@ -45,6 +46,7 @@ export async function deleteJob(formData: FormData) {
 export async function analyzeJob(formData: FormData) {
   const profile = await requireEmployer();
   const id = String(formData.get("id") ?? "");
+  if (DEMO_MODE) redirect(`/employer/jobs/${encodeURIComponent(id)}?error=demo`);
 
   const job = await prisma.job.findFirst({
     where: { id, employerId: profile.id },

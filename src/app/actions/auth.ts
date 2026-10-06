@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { signIn, signOut } from "@/auth";
+import { DEMO_MODE } from "@/lib/demo";
 
 const registerSchema = z.object({
   name: z.string().min(1),
@@ -16,6 +17,7 @@ const registerSchema = z.object({
 });
 
 export async function register(formData: FormData) {
+  if (DEMO_MODE) redirect("/login");
   const parsed = registerSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect("/register?error=invalid");
   const { name, password, role, companyName } = parsed.data;

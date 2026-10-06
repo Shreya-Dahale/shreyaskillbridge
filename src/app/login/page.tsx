@@ -6,6 +6,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DEMO_MODE } from "@/lib/demo";
+import { DemoLogins } from "@/components/auth/DemoLogins";
 
 export default async function LoginPage({
   searchParams,
@@ -38,12 +40,16 @@ export default async function LoginPage({
         </Button>
       </form>
 
-      <p className="text-sm text-muted-foreground">
-        New to SkillBridge?{" "}
-        <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
-          Create an account
-        </Link>
-      </p>
+      {DEMO_MODE ? (
+        <DemoLogins />
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          New to SkillBridge?{" "}
+          <Link href="/register" className="font-medium text-foreground underline underline-offset-4">
+            Create an account
+          </Link>
+        </p>
+      )}
     </AuthShell>
   );
 }

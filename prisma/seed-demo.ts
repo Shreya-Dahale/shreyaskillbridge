@@ -170,7 +170,7 @@ const DEMO: DemoCandidate[] = [
   },
 ];
 
-async function recordAttempt(
+export async function recordAttempt(
   prisma: PrismaClient,
   candidateId: string,
   slug: string,
@@ -281,4 +281,18 @@ export async function seedDemoCandidates(prisma: PrismaClient, passwordHash: str
       create: { candidateId, code: c.code, enabled: c.enabled, ...c.settings },
     });
   }
+}
+/** Aditi's practice evidence: Java, SQL and REST passed, so her gap page matches the project story. */
+export async function seedAditiEvidence(prisma: PrismaClient) {
+  const user = await prisma.user.findUnique({
+    where: { email: "aditi@example.com" },
+    include: { candidate: true },
+  });
+  if (!user?.candidate) return;
+  const id = user.candidate.id;
+
+  await recordAttempt(prisma, id, "java-average", "FAILED", 9);
+  await recordAttempt(prisma, id, "java-average", "PASSED", 6);
+  await recordAttempt(prisma, id, "sql-department-totals", "PASSED", 4);
+  await recordAttempt(prisma, id, "rest-user-api", "PASSED", 3);
 }

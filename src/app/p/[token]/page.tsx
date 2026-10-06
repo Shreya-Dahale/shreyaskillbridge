@@ -110,9 +110,7 @@ export default async function SharedProfilePage({ params }: { params: Promise<{ 
           of what they can do, alongside their experience. It is not a score or a hiring decision.
         </p>
         <ProfileView profile={shared} />
-        <p className="text-xs text-muted-foreground">
-          Contacting candidates through SkillBridge invitations is coming soon.
-        </p>
+        
       </main>
     </div>
   );

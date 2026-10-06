@@ -7,6 +7,7 @@ import { requireCandidate } from "@/lib/candidate";
 import { saveFile, readFile, deleteFile } from "@/lib/storage";
 import { pdfToText } from "@/lib/pdf";
 import { extractResumeData } from "@/lib/ai/gemini";
+import { DEMO_MODE } from "@/lib/demo";
 
 const PATH = "/candidate/resume";
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -25,6 +26,7 @@ async function extractAndStore(resumeId: string, storagePath: string) {
 }
 
 export async function uploadResume(formData: FormData) {
+  if (DEMO_MODE) redirect(`${PATH}?error=demo`);
   const profile = await requireCandidate();
 
   const file = formData.get("resume");
@@ -51,6 +53,7 @@ export async function uploadResume(formData: FormData) {
 }
 
 export async function reextractResume(formData: FormData) {
+  if (DEMO_MODE) redirect(`${PATH}?error=demo`);
   const profile = await requireCandidate();
   const id = String(formData.get("id") ?? "");
 
@@ -78,6 +81,7 @@ export async function deleteResume(formData: FormData) {
 }
 
 export async function analyzeResume(formData: FormData) {
+  if (DEMO_MODE) redirect(`${PATH}?error=demo`);
   const profile = await requireCandidate();
   const id = String(formData.get("id") ?? "");
 

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { analyzeResume, deleteResume, reextractResume, uploadResume } from "@/app/actions/resume";
 import { requireCandidate } from "@/lib/candidate";
 import { prisma } from "@/lib/db";
+import { DEMO_MODE, DEMO_NOTE } from "@/lib/demo";
 
 const errors: Record<string, string> = {
   missing: "Please choose a PDF file.",
@@ -25,6 +26,7 @@ const errors: Record<string, string> = {
   type: "That doesn't look like a PDF. Please upload a PDF file.",
   notext: "No readable text was found in this resume, so it can't be analyzed.",
   ai: "The AI analysis failed. Please try again in a moment.",
+  demo: DEMO_NOTE,
 };
 
 function extractionStatus(text: string | null) {
@@ -60,20 +62,24 @@ export default async function ResumePage({
 
       {error && <Notice tone="error">{errors[error] ?? "Something went wrong."}</Notice>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Upload a resume</CardTitle>
-          <CardDescription>PDF only, up to 5 MB. Only you can open the file.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={uploadResume} className="flex flex-col gap-2 sm:flex-row">
-            <Input name="resume" type="file" accept="application/pdf" aria-label="Resume PDF" required />
-            <Button type="submit">
-              <Upload /> Upload
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {DEMO_MODE ? (
+        <Notice tone="warning">Resume upload and AI analysis are switched off in the hosted demo. {DEMO_NOTE}</Notice>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Upload a resume</CardTitle>
+            <CardDescription>PDF only, up to 5 MB. Only you can open the file.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={uploadResume} className="flex flex-col gap-2 sm:flex-row">
+              <Input name="resume" type="file" accept="application/pdf" aria-label="Resume PDF" required />
+              <Button type="submit">
+                <Upload /> Upload
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Uploaded resumes</h2>

@@ -13,12 +13,14 @@ import { requireCandidate } from "@/lib/candidate";
 import { prisma } from "@/lib/db";
 import { gradeResultSchema, VERDICT_LABEL, type Verdict } from "@/lib/grading/result";
 import { cn } from "@/lib/utils";
+import { DEMO_MODE, DEMO_NOTE } from "@/lib/demo";
 
 const errors: Record<string, string> = {
   empty: "Please write some code before submitting.",
   invalid: "Your code contains characters that can't be saved.",
   size: "Your code is too long. The limit is 20,000 characters.",
   limit: "You have reached the limit of 30 submissions per hour. Please try again later.",
+  demo: DEMO_NOTE,
 };
 
 const STATUS = {
@@ -182,21 +184,16 @@ export default async function TaskPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form action={submitCode} className="space-y-3">
-                <input type="hidden" name="slug" value={task.slug} />
-                <Textarea
-                  name="code"
-                  aria-label={isSql ? "Your SQL query" : "Your Java code"}
-                  defaultValue={initialCode}
-                  required
-                  rows={20}
-                  spellCheck={false}
-                  className="min-h-80 font-mono text-sm"
-                />
-                <SubmitButton pendingText="Grading...">
-                  <Send /> Submit
-                </SubmitButton>
-              </form>
+              {DEMO_MODE ? (
+                <Notice tone="warning">
+                  Grading is switched off in the hosted demo, because it needs a sandboxed code runner. You can read the
+                  task and its sample cases. See the seeded results on the evidence and gap pages.
+                </Notice>
+              ) : (
+                <form action={submitCode} className="space-y-3">
+                  {/* the existing hidden slug input, Textarea and SubmitButton, unchanged */}
+                </form>
+              )}
             </CardContent>
           </Card>
 

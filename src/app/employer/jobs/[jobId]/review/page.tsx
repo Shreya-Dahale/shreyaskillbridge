@@ -9,6 +9,7 @@ import { saveRequirements } from "@/app/actions/requirements";
 import { jobExtractionSchema } from "@/lib/ai/schemas";
 import { prisma } from "@/lib/db";
 import { requireEmployer } from "@/lib/employer";
+import { DEMO_MODE} from "@/lib/demo";
 
 const errors: Record<string, string> = {
   skills:
@@ -50,17 +51,19 @@ export default async function ReviewRequirementsPage({
       importance: js.importance,
       minYears: js.minYears,
     }));
+  } else if (DEMO_MODE) {
+    rows = [];
   } else {
-    const parsed = jobExtractionSchema.safeParse(job.extractionJson);
-    if (!parsed.success) redirect(`/employer/jobs/${job.id}`);
-    rows = parsed.data.skills.map((s) => ({
-      name: s.name,
-      importance: s.importance === "required" ? ("REQUIRED" as const) : ("PREFERRED" as const),
-      minYears: s.minYears ?? null,
-    }));
+      const parsed = jobExtractionSchema.safeParse(job.extractionJson);
+      if (!parsed.success) redirect(`/employer/jobs/${job.id}`);
+      rows = parsed.data.skills.map((s) => ({
+        name: s.name,
+        importance: s.importance === "required" ? ("REQUIRED" as const) : ("PREFERRED" as const),
+        minYears: s.minYears ?? null,
+      }));
   }
 
-  const rowCount = rows.length + BLANK_ROWS;
+  const rowCount = rows.length + (rows.length === 0 ? 8 : BLANK_ROWS);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">

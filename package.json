@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "tasks:verify": "tsx tools/verify-tasks.ts"
+    "tasks:verify": "tsx tools/verify-tasks.ts",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@google/genai": "^2.24.0",
